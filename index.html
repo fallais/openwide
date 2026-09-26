@@ -19,29 +19,33 @@
     position: fixed; top: 0; left: 0; right: 0;
     display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: flex-start;
     padding: max(10px, env(safe-area-inset-top)) 12px 0; pointer-events: none;
-    font-size: clamp(13px, 2.2vw, 18px);
+    font-size: clamp(12px, 2.1vw, 17px);
   }
-  .group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; max-width: 46%; }
   .pill {
     background: rgba(255,255,255,.9); border-radius: 999px; padding: 5px 12px;
     box-shadow: 0 3px 0 rgba(90,50,120,.15); color: #5B3A78; font-weight: bold; white-space: nowrap;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis;
   }
   .pill b { color: #E8488A; }
   #hudTimer.hot { background: #FFE0D6; color: #D9442B; }
   #hudCombo { background: #FFD84D; color: #7A4A00; transform-origin: center; transition: transform .1s; }
+  #hudCond { background: #E3F4FF; color: #2F6E9E; }
+  .pill.alert { background: #C8F5D8; color: #1F7A4A; animation: pulse .5s infinite alternate; }
+  @keyframes pulse { to { transform: scale(1.08); } }
   .meters { display: flex; flex-direction: column; gap: 5px; min-width: 150px; }
   .meter { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.9);
     border-radius: 999px; padding: 4px 10px 4px 8px; box-shadow: 0 3px 0 rgba(90,50,120,.15);
     color: #5B3A78; font-weight: bold; font-size: .85em; }
-  .meter .label { width: 4.8em; white-space: nowrap; }
+  .meter .label { width: 5.2em; white-space: nowrap; }
   .bar { flex: 1; height: 12px; min-width: 70px; background: #EFE3F5; border-radius: 999px; overflow: hidden; }
   .fill { height: 100%; width: 50%; border-radius: 999px; transition: width .15s, background-color .3s; }
   #messFill { background: #A0703C; }
 
   /* ---------- Buttons ---------- */
-  #funnyBtn, #muteBtn {
+  .round-btn {
     position: fixed; border: none; border-radius: 50%; cursor: pointer; font-family: inherit;
-    box-shadow: 0 5px 0 rgba(90,50,120,.25); touch-action: manipulation;
+    box-shadow: 0 5px 0 rgba(90,50,120,.25); touch-action: manipulation; z-index: 5;
   }
   #funnyBtn {
     right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); width: 92px; height: 92px;
@@ -49,26 +53,28 @@
     font-size: 38px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
   #funnyBtn small { font-size: 11px; font-weight: bold; color: #5B3A78; margin-top: 2px; }
-  #funnyBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(90,50,120,.25); }
-  #muteBtn { right: 120px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px;
-    background: #fff; font-size: 22px; }
+  .round-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(90,50,120,.25); }
+  #muteBtn { right: 120px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff; font-size: 22px; }
+  #langBtn { right: 176px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff;
+    font-size: 15px; font-weight: bold; color: #5B3A78; z-index: 20; }
 
   /* ---------- Overlay screens ---------- */
   .screen {
     position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
     background: rgba(255, 228, 240, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
-    padding: 16px; cursor: default;
+    padding: 16px; cursor: default; z-index: 10; overflow-y: auto;
   }
   .card {
-    background: #fff; border-radius: 28px; padding: 26px 28px; max-width: 440px; width: 100%;
+    background: #fff; border-radius: 28px; padding: 24px 26px; max-width: 480px; width: 100%; margin: auto;
     text-align: center; color: #5B3A78; box-shadow: 0 10px 0 rgba(90,50,120,.18), 0 20px 50px rgba(0,0,0,.15);
     animation: pop .35s cubic-bezier(.2,1.6,.4,1);
   }
   @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-  .card h1 { font-size: clamp(38px, 9vw, 56px); color: #FF5C9E; text-shadow: 3px 3px 0 #FFD84D; letter-spacing: 1px; }
+  .card h1 { font-size: clamp(36px, 9vw, 54px); color: #FF5C9E; text-shadow: 3px 3px 0 #FFD84D; letter-spacing: 1px; }
   .card h2 { font-size: 30px; color: #FF5C9E; margin-bottom: 10px; }
   .card p { margin: 8px 0; line-height: 1.4; }
-  .card ul { text-align: left; margin: 12px 0 16px 18px; line-height: 1.5; font-size: 15px; }
+  .card ul { text-align: left; margin: 12px 0 16px 18px; line-height: 1.45; font-size: 14.5px; }
+  .card li { margin-bottom: 3px; }
   .stats { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 14px 0 18px; text-align: left; font-size: 17px; }
   .stats b { color: #E8488A; text-align: right; }
   .big-btn {
@@ -84,72 +90,76 @@
 
 <canvas id="game"></canvas>
 
-<!-- Heads-up display (updated every frame from game state) -->
+<!-- Heads-up display (updated every frame from game state). data-i18n = translated text. -->
 <div id="hud" class="hidden">
   <div class="group">
-    <div class="pill">Level <b id="hudLevel">1</b></div>
-    <div class="pill">Bites <b id="hudBites">0/7</b></div>
+    <div class="pill"><span data-i18n="level"></span> <b id="hudLevel">1</b></div>
+    <div class="pill"><span data-i18n="bites"></span> <b id="hudBites">0/7</b></div>
     <div class="pill" id="hudTimer">⏱ 0:00</div>
+    <div class="pill hidden" id="hudCond"></div>
   </div>
   <div class="group">
-    <div class="pill">Score <b id="hudScore">0</b></div>
-    <div class="pill hidden" id="hudCombo">x1</div>
-    <div class="pill" id="hudFood">🥣</div>
+    <div class="pill"><span data-i18n="score"></span> <b id="hudScore">0</b></div>
+    <div class="pill hidden" id="hudCombo"></div>
+    <div class="pill" id="hudFood"></div>
+    <div class="pill" id="hudBurp"></div>
   </div>
   <div class="meters">
-    <div class="meter"><span class="label">Mood <span id="moodFace">😊</span></span><div class="bar"><div class="fill" id="moodFill"></div></div></div>
-    <div class="meter"><span class="label">Mess</span><div class="bar"><div class="fill" id="messFill"></div></div></div>
+    <div class="meter"><span class="label"><span data-i18n="mood"></span> <span id="moodFace">😊</span></span><div class="bar"><div class="fill" id="moodFill"></div></div></div>
+    <div class="meter"><span class="label" data-i18n="mess"></span><div class="bar"><div class="fill" id="messFill"></div></div></div>
   </div>
 </div>
 
-<button id="funnyBtn" class="hidden" aria-label="Funny face">😜<small>SPACE</small></button>
-<button id="muteBtn" class="hidden" aria-label="Toggle sound">🔊</button>
+<button id="funnyBtn" class="round-btn hidden" aria-label="Funny face">😜<small data-i18n="spaceKey"></small></button>
+<button id="muteBtn" class="round-btn hidden" aria-label="Sound">🔊</button>
+<button id="langBtn" class="round-btn" aria-label="Language">FR</button>
 
 <div id="screenStart" class="screen">
   <div class="card">
-    <h1>Open Wide!</h1>
-    <p>Feed the baby. The baby isn't making it easy.</p>
+    <h1 data-i18n="title"></h1>
+    <p data-i18n="tagline"></p>
     <ul>
-      <li><b>Move</b> the spoon with the mouse (drag with your finger on mobile).</li>
-      <li><b>Click</b> (or lift your finger) to feed. Only works when the mouth is open!</li>
-      <li>Refill the spoon at the <b>bowl</b>. Move too fast and the food falls off.</li>
-      <li>Loop the spoon around like an <b>airplane</b> ✈ to make baby curious.</li>
-      <li>Press <b>SPACE</b> or 😜 to pull a funny face and make baby laugh.</li>
-      <li>Sneeze coming? Put the spoon back <b>in the bowl</b>, then pinch the nose with <b>F + J</b> together (two-finger tap on mobile).</li>
-      <li>Soups are runny and spill easily. Compotes are thick and forgiving. The longer a level takes, the harder baby gets!</li>
+      <li data-i18n-html="help1"></li>
+      <li data-i18n-html="help2"></li>
+      <li data-i18n-html="help3"></li>
+      <li data-i18n-html="help4"></li>
+      <li data-i18n-html="help5"></li>
+      <li data-i18n-html="help6"></li>
+      <li data-i18n-html="help7"></li>
+      <li data-i18n-html="help8"></li>
     </ul>
-    <button class="big-btn" id="startBtn">Start feeding!</button>
+    <button class="big-btn" id="startBtn" data-i18n="start"></button>
   </div>
 </div>
 
 <div id="screenLevel" class="screen hidden">
   <div class="card">
-    <h2 id="lvlTitle">Level 1 complete!</h2>
+    <h2 id="lvlTitle"></h2>
     <div class="stats">
-      <span>Bites</span><b id="lvlBites">10</b>
-      <span>Misses</span><b id="lvlMisses">0</b>
-      <span>Time</span><b id="lvlTime">0:00</b>
-      <span>Speed bonus</span><b id="lvlTimeBonus">+0</b>
-      <span>Mess rating</span><b id="lvlMess">Spotless</b>
-      <span>Clean bonus</span><b id="lvlBonus">+0</b>
-      <span>Total score</span><b id="lvlScore">0</b>
+      <span data-i18n="bites"></span><b id="lvlBites">7</b>
+      <span data-i18n="misses"></span><b id="lvlMisses">0</b>
+      <span data-i18n="time"></span><b id="lvlTime">0:00</b>
+      <span data-i18n="speedBonus"></span><b id="lvlTimeBonus">+0</b>
+      <span data-i18n="messRating"></span><b id="lvlMess"></b>
+      <span data-i18n="cleanBonus"></span><b id="lvlBonus">+0</b>
+      <span data-i18n="totalScore"></span><b id="lvlScore">0</b>
     </div>
-    <button class="big-btn" id="nextBtn">Next level ▶</button>
+    <button class="big-btn" id="nextBtn" data-i18n="nextLevel"></button>
   </div>
 </div>
 
 <div id="screenOver" class="screen hidden">
   <div class="card">
-    <h2>Waaaah! Game over</h2>
-    <p>Baby has had enough.</p>
+    <h2 data-i18n="gameOver"></h2>
+    <p data-i18n="hadEnough"></p>
     <div class="stats">
-      <span>Score</span><b id="overScore">0</b>
-      <span>Level reached</span><b id="overLevel">1</b>
-      <span>Total bites</span><b id="overBites">0</b>
-      <span>Mess rating</span><b id="overMess">Spotless</b>
-      <span>Best score</span><b id="overBest">0</b>
+      <span data-i18n="score"></span><b id="overScore">0</b>
+      <span data-i18n="levelReached"></span><b id="overLevel">1</b>
+      <span data-i18n="totalBites"></span><b id="overBites">0</b>
+      <span data-i18n="messRating"></span><b id="overMess"></b>
+      <span data-i18n="bestScore"></span><b id="overBest">0</b>
     </div>
-    <button class="big-btn" id="againBtn">Play again</button>
+    <button class="big-btn" id="againBtn" data-i18n="playAgain"></button>
   </div>
 </div>
 
@@ -178,11 +188,7 @@ const CONFIG = {
 
   // Difficulty also creeps up with time spent in the current level.
   // Every `secondsPerStep` seconds adds the equivalent of one extra level, up to `maxExtra`.
-  timer: {
-    secondsPerStep: 20,
-    maxExtra: 3,
-    hotAfter: 30,           // the HUD timer turns red after this many seconds
-  },
+  timer: { secondsPerStep: 20, maxExtra: 3, hotAfter: 30 },
 
   score: {
     bite: 100,              // base points per bite
@@ -252,13 +258,26 @@ const CONFIG = {
     length: 140,
   },
 
+  // Airplane trick: draw the figure shown in the baby's thought bubble with a loaded spoon.
   airplane: {
-    window: 1.6,            // seconds in which the loop must be completed
-    loopAngle: Math.PI * 2 * 0.85, // total turning needed (~a full circle)
-    minStep: 10,            // ignore tiny movements when measuring the loop
+    window: 3.0,            // seconds of spoon movement kept for recognition
+    sampleStep: 8,          // path is resampled every N units before analysis
+    loopAngle: Math.PI * 2 * 0.9, // a figure must turn ~a full lap...
+    maxLoopAngle: Math.PI * 2 * 1.3,
+    closeRatio: 0.25,       // ...and end near where it started (fraction of its size)
+    minSize: 70,            // ignore tiny wiggles
+    cornerAngle: 0.9,       // radians of direction change that count as a corner
     curiousTime: 3.0,       // how long the baby stays curious
     openMultiplier: 2.2,    // curious baby keeps the mouth open this much longer
     cooldown: 1.0,
+    hintCooldown: 2.5,      // "baby wants a triangle" reminder spacing
+  },
+
+  figures: {
+    list: ['circle', 'triangle', 'square'],
+    firstLevel: 'circle',   // level 1 always asks for this
+    changeFromLevel: 4,     // from this level on, the figure changes during the level
+    changeEvery: 12,        // seconds between changes (also changes after each successful airplane)
   },
 
   funnyFace: {
@@ -267,14 +286,34 @@ const CONFIG = {
     dropResetsCooldown: true, // dropping food on the floor restarts the funny-face cooldown
   },
 
-  // Pinch the nose to stop a sneeze: spoon down in the bowl, then press both keys.
-  pinch: {
-    keys: ['KeyF', 'KeyJ'],
-    keyLabel: 'F + J',
-    points: 150,
-    moodGain: 6,
-    annoyPenalty: 3,        // pinching for no reason annoys the baby
-    showTime: 0.6,          // how long the pinching fingers stay on screen
+  // Double-tap SPACE (or the 😜 button) during a sneeze windup to pinch the nose.
+  pinch: { doubleTapWindow: 0.35, points: 150, moodGain: 6, showTime: 0.6 },
+
+  // Hold the spoon still near the baby for too long and it gets grabbed: mash to win it back.
+  grab: {
+    radius: 150,            // spoon this close to the mouth...
+    stillSpeed: 140,        // ...moving slower than this (units/sec)...
+    delay: 1.6,             // ...for this long (seconds) gets grabbed
+    delayPerLevel: 0.1,     // grabs come this much sooner per level
+    minDelay: 0.8,
+    startPower: 0.5,        // tug-of-war: 1 = you win, 0 = baby wins
+    pull: 0.35,             // how fast the baby pulls (power/sec)
+    pullPerLevel: 0.05,
+    mashPower: 0.09,        // power gained per click/tap/key press
+    maxTime: 5,
+    hairMess: 10,
+  },
+
+  // Every few bites the baby needs a burp: pat the tummy. Skip it and the next sneeze is a spit-up.
+  burp: {
+    bitesPerBurp: 3,
+    patsNeeded: 3,
+    patWindow: 1.6,         // seconds in which the pats must happen
+    points: 100,
+    moodGain: 8,
+    moodDecayMult: 2,       // a gassy baby gets impatient twice as fast
+    spitUpMess: 20,
+    spitUpMood: -10,
   },
 
   events: {
@@ -284,11 +323,19 @@ const CONFIG = {
     gapShrinkPerLevel: 0.1,
     minGap: 2.5,
     weights: { sneeze: 1, lookAway: 1.4, raspberry: 1 },
-    sneezeWindup: 1.8,      // long enough to put the spoon down and pinch the nose
+    sneezeWindup: 1.6,      // long enough to react with a double-tap
     sneezeBurst: 0.5,
     lookAwayMin: 1.4,
     lookAwayMax: 2.4,
     raspberryTime: 1.5,
+  },
+
+  // Some levels the baby is under the weather: certain events happen a lot more.
+  conditions: {
+    fromLevel: 2,
+    chance: 0.45,           // chance a level (from fromLevel on) has a condition
+    cold:     { weights: { sneeze: 4 },    gapMult: 0.6 },
+    teething: { weights: { raspberry: 4 }, gapMult: 0.6 },
   },
 
   fx: { shakeSneeze: 18, shakeSplat: 5, maxFaceSplats: 14, maxFloorSplats: 70 },
@@ -296,13 +343,112 @@ const CONFIG = {
 
 // Food changes each level. viscosity: 0 = watery soup (spills and drips easily), 1 = thick compote.
 const FOODS = [
-  { name: 'Apple compote',     viscosity: 0.8,  color: '#E8C15A', light: '#FFE59A' },
-  { name: 'Carrot soup',       viscosity: 0.35, color: '#FF9A3C', light: '#FFC27A' },
-  { name: 'Banana compote',    viscosity: 0.7,  color: '#F2D640', light: '#FFF08A' },
-  { name: 'Pea soup',          viscosity: 0.3,  color: '#7BC043', light: '#A8DD76' },
-  { name: 'Blueberry compote', viscosity: 0.9,  color: '#5C6BC0', light: '#98A4F0' },
-  { name: 'Beetroot soup',     viscosity: 0.15, color: '#C2185B', light: '#E86A9A' },
+  { id: 'apple',     viscosity: 0.8,  color: '#E8C15A', light: '#FFE59A' },
+  { id: 'carrot',    viscosity: 0.35, color: '#FF9A3C', light: '#FFC27A' },
+  { id: 'banana',    viscosity: 0.7,  color: '#F2D640', light: '#FFF08A' },
+  { id: 'pea',       viscosity: 0.3,  color: '#7BC043', light: '#A8DD76' },
+  { id: 'blueberry', viscosity: 0.9,  color: '#5C6BC0', light: '#98A4F0' },
+  { id: 'beet',      viscosity: 0.15, color: '#C2185B', light: '#E86A9A' },
 ];
+
+/* =====================================================================
+   Translations. Arrays pick a random entry; {name} placeholders get filled in.
+   ===================================================================== */
+const I18N = {
+  en: {
+    title: 'Open Wide!', tagline: "Feed the baby. The baby isn't making it easy.",
+    help1: '<b>Move</b> the spoon with the mouse (drag with your finger on mobile).',
+    help2: '<b>Click</b> (or lift your finger) to feed. Only works when the mouth is open!',
+    help3: 'Refill at the <b>bowl</b>. Soups are runny and spill if you rush; compotes are thick.',
+    help4: 'Do the <b>airplane</b> ✈: draw the shape from baby\'s thought bubble with a full spoon.',
+    help5: '<b>SPACE</b> or 😜: funny face. <b>Double-tap</b> it during a sneeze to pinch the nose!',
+    help6: 'Don\'t hold the spoon still near baby. If it gets grabbed, <b>click fast</b> to win it back.',
+    help7: 'Baby needs a burp? <b>Pat the tummy 3 times</b>, or the next sneeze will be… messy.',
+    help8: 'The longer a level takes, the trickier baby gets!',
+    start: 'Start feeding!', spaceKey: 'SPACE',
+    level: 'Level', bites: 'Bites', score: 'Score', mood: 'Mood', mess: 'Mess',
+    combo: 'Combo x{m}', runny: 'runny', thick: 'thick', burp: 'Burp', burpMe: 'Burp me!',
+    misses: 'Misses', time: 'Time', speedBonus: 'Speed bonus', messRating: 'Mess rating',
+    cleanBonus: 'Clean bonus', totalScore: 'Total score', nextLevel: 'Next level ▶',
+    levelComplete: 'Level {n} complete!',
+    gameOver: 'Waaaah! Game over', hadEnough: 'Baby has had enough.',
+    levelReached: 'Level reached', totalBites: 'Total bites', bestScore: 'Best score', playAgain: 'Play again',
+    rating: ['Spotless ✨', 'Pretty tidy', 'Messy', 'Disaster zone', 'Food apocalypse!'],
+    food_apple: 'Apple compote', food_carrot: 'Carrot soup', food_banana: 'Banana compote',
+    food_pea: 'Pea soup', food_blueberry: 'Blueberry compote', food_beet: 'Beetroot soup',
+    fig_circle: 'circle', fig_triangle: 'triangle', fig_square: 'square',
+    cond_cold: '🤧 Has a cold', cond_teething: '🦷 Teething',
+    levelBanner: 'Level {n}', runnyIntro: 'Runny: go easy!', thickIntro: 'Nice and thick',
+    planeIntro: 'Airplane: draw a {fig}!',
+    allGone: 'All gone!', waah: 'WAAAAH!', empty: 'Empty spoon!',
+    splat: ['Splat!', 'Yuck!', 'Blegh!', 'Nope!'], tooFast: 'Too fast!', pbbt: 'Pbbbbt!', refill: 'Refill!',
+    laugh: ['Hehehe!', 'Giggle!', 'Hahaha!'], notNow: 'Not now!', wheee: 'Wheee! ✈',
+    wantsFig: 'Baby wants a {fig}!', newFig: 'New shape!',
+    ah: 'Ah... ahh...', choo: 'ACHOO!',
+    pinchHintKey: 'Double-tap SPACE to pinch the nose!', pinchHintTouch: 'Double-tap 😜 to pinch the nose!',
+    sneezeStopped: 'Sneeze stopped! +{p}',
+    grabbed: 'Grabbed!', mashKey: 'Click fast!', mashTouch: 'Tap fast!',
+    grabWin: 'Got it back!', grabLose: 'Food in the hair!',
+    burpNeeded: 'Needs a burp!', burpHint: 'Pat the tummy 3 times!', burped: 'BUUURP! +{p}', pat: 'Pat!',
+    spitUp: 'Spit-up! Should have burped…',
+  },
+  fr: {
+    title: 'Ouvre grand !', tagline: 'Nourris le bébé. Il ne va pas te faciliter la tâche.',
+    help1: '<b>Déplace</b> la cuillère avec la souris (glisse le doigt sur mobile).',
+    help2: '<b>Clique</b> (ou lève le doigt) pour donner la becquée. Seulement bouche ouverte !',
+    help3: 'Remplis la cuillère dans le <b>bol</b>. Les soupes sont liquides et débordent si tu te presses ; les compotes sont épaisses.',
+    help4: 'Fais l\'<b>avion</b> ✈ : dessine avec la cuillère pleine la forme dans la bulle du bébé.',
+    help5: '<b>ESPACE</b> ou 😜 : grimace. <b>Double-tape</b> pendant un éternuement pour pincer le nez !',
+    help6: 'Ne laisse pas la cuillère immobile près du bébé. S\'il l\'attrape, <b>clique vite</b> pour la récupérer.',
+    help7: 'Bébé doit faire son rot ? <b>Tapote-lui le ventre 3 fois</b>, sinon le prochain éternuement sera… salissant.',
+    help8: 'Plus un niveau dure, plus bébé devient coriace !',
+    start: 'À table !', spaceKey: 'ESPACE',
+    level: 'Niveau', bites: 'Bouchées', score: 'Score', mood: 'Humeur', mess: 'Saleté',
+    combo: 'Combo x{m}', runny: 'liquide', thick: 'épaisse', burp: 'Rot', burpMe: 'Mon rot !',
+    misses: 'Ratés', time: 'Temps', speedBonus: 'Bonus rapidité', messRating: 'Propreté',
+    cleanBonus: 'Bonus propreté', totalScore: 'Score total', nextLevel: 'Niveau suivant ▶',
+    levelComplete: 'Niveau {n} terminé !',
+    gameOver: 'Ouiiin ! Partie terminée', hadEnough: 'Bébé en a assez.',
+    levelReached: 'Niveau atteint', totalBites: 'Bouchées au total', bestScore: 'Meilleur score', playAgain: 'Rejouer',
+    rating: ['Impeccable ✨', 'Plutôt propre', 'Ça tache', 'Zone sinistrée', 'Apocalypse culinaire !'],
+    food_apple: 'Compote de pomme', food_carrot: 'Soupe de carottes', food_banana: 'Compote de banane',
+    food_pea: 'Soupe de petits pois', food_blueberry: 'Compote de myrtilles', food_beet: 'Soupe de betterave',
+    fig_circle: 'cercle', fig_triangle: 'triangle', fig_square: 'carré',
+    cond_cold: '🤧 Enrhumé', cond_teething: '🦷 Fait ses dents',
+    levelBanner: 'Niveau {n}', runnyIntro: 'Liquide : doucement !', thickIntro: 'Bien épaisse',
+    planeIntro: 'Avion : dessine un {fig} !',
+    allGone: 'Tout mangé !', waah: 'OUIIIN !', empty: 'Cuillère vide !',
+    splat: ['Splatch !', 'Beurk !', 'Bleuh !', 'Non !'], tooFast: 'Trop vite !', pbbt: 'Pfffrrt !', refill: 'Remplis !',
+    laugh: ['Héhéhé !', 'Hihihi !', 'Hahaha !'], notNow: 'Pas maintenant !', wheee: 'Vroum ! ✈',
+    wantsFig: 'Bébé veut un {fig} !', newFig: 'Nouvelle forme !',
+    ah: 'Ah... ahh...', choo: 'ATCHOUM !',
+    pinchHintKey: 'Double-tape ESPACE pour pincer le nez !', pinchHintTouch: 'Double-tape 😜 pour pincer le nez !',
+    sneezeStopped: 'Éternuement évité ! +{p}',
+    grabbed: 'Attrapée !', mashKey: 'Clique vite !', mashTouch: 'Tape vite !',
+    grabWin: 'Récupérée !', grabLose: 'De la purée dans les cheveux !',
+    burpNeeded: 'Besoin d\'un rot !', burpHint: 'Tapote le ventre 3 fois !', burped: 'BUUURP ! +{p}', pat: 'Tap !',
+    spitUp: 'Renvoi ! Fallait faire le rot…',
+  },
+};
+
+// Language follows the browser's preferred locales (first supported one wins, English by default).
+function browserLang() {
+  const prefs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en'];
+  for (const l of prefs) {
+    const code = String(l).toLowerCase().split('-')[0];
+    if (I18N[code]) return code;
+  }
+  return 'en';
+}
+let LANG = browserLang();
+
+// Translate a key. Arrays return a random entry.
+function t(key, vars) {
+  let s = I18N[LANG][key] ?? I18N.en[key] ?? key;
+  if (Array.isArray(s)) s = s[Math.floor(Math.random() * s.length)];
+  if (vars) for (const k in vars) s = s.replace('{' + k + '}', vars[k]);
+  return s;
+}
 
 /* =====================================================================
    Utilities
@@ -313,6 +459,7 @@ const lerp  = (a, b, t) => a + (b - a) * t;
 const dist  = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
 const TAU = Math.PI * 2;
 const $ = id => document.getElementById(id);
+const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 
 /* =====================================================================
    Sound: tiny synth built on the Web Audio API
@@ -401,9 +548,7 @@ const Sound = {
         this.noise(0.1, { vol: 0.2, filter: 700 });
         this.tone(130, 0.1, { vol: 0.2, slide: 50 });
         break;
-      case 'whoops':
-        this.tone(750, 0.3, { type: 'triangle', vol: 0.15, slide: 220 });
-        break;
+      case 'whoops': this.tone(750, 0.3, { type: 'triangle', vol: 0.15, slide: 220 }); break;
       case 'scoop':
         this.noise(0.12, { vol: 0.25, filter: 2500, type: 'bandpass' });
         this.tone(300, 0.14, { vol: 0.15, slide: 700, delay: 0.05 });
@@ -416,9 +561,7 @@ const Sound = {
         for (let i = 0; i < 5; i++)
           this.tone(700 - i * 35, 0.09, { type: 'triangle', vol: 0.18, slide: 560 - i * 35, delay: i * 0.12 });
         break;
-      case 'ah':
-        this.tone(300, 0.85, { type: 'triangle', vol: 0.12, slide: 620 });
-        break;
+      case 'ah': this.tone(300, 1.4, { type: 'triangle', vol: 0.12, slide: 620 }); break;
       case 'choo':
         this.noise(0.45, { vol: 0.8, filter: 3500, type: 'bandpass', q: 0.7, sweepTo: 700 });
         this.tone(220, 0.2, { type: 'square', vol: 0.1, slide: 90 });
@@ -437,6 +580,17 @@ const Sound = {
         this.tone(900, 0.12, { type: 'square', vol: 0.1, slide: 1300 });
         this.tone(1300, 0.14, { type: 'square', vol: 0.08, slide: 700, delay: 0.12 });
         break;
+      case 'grab': this.tone(400, 0.15, { type: 'square', vol: 0.1, slide: 900 }); break;
+      case 'mash': this.tone(500 + arg * 500, 0.05, { type: 'triangle', vol: 0.08 }); break;
+      case 'pat':
+        this.noise(0.06, { vol: 0.25, filter: 500 });
+        this.tone(160, 0.07, { vol: 0.2, slide: 110 });
+        break;
+      case 'burp':
+        this.tone(110, 0.55, { type: 'sawtooth', vol: 0.22, slide: 65 });
+        this.noise(0.4, { vol: 0.15, filter: 400 });
+        break;
+      case 'newfig': this.tone(660, 0.1, { type: 'triangle', vol: 0.1, slide: 990 }); break;
       case 'click': this.tone(660, 0.06, { type: 'triangle', vol: 0.1 }); break;
     }
   },
@@ -484,8 +638,14 @@ const S = {
   screen: 'start',     // start | playing | levelEnding | levelDone | crying | over
   level: 1, score: 0, combo: 0, bites: 0,
   mood: CONFIG.mood.start, mess: 0,
-  levelMisses: 0, totalBites: 0, messHistory: [], levelTime: 0, pinchHintShown: false,
-  funnyCd: 0, eventTimer: 0, pendingTimer: 0,
+  levelMisses: 0, totalBites: 0, messHistory: [], levelTime: 0,
+  funnyCd: 0, eventTimer: 0, pendingTimer: 0, lastTap: -10,
+  condition: null,     // null | 'cold' | 'teething'
+  figure: 'circle', figureTimer: 0, figurePop: 0,
+  grab: null,          // { x, y, power, t } while the baby holds the spoon
+  stillTimer: 0,       // how long the spoon has hovered still near the baby
+  burpCount: 0, needsBurp: false, pats: [],
+  hints: {},           // one-time hints already shown this game
   shake: 0, time: 0, best: 0,
 };
 
@@ -497,7 +657,7 @@ const baby = {
   mouth: { open: 0, state: 'closed', timer: 1.5, snap: false, nextLong: false },
   event: null,          // { type: 'sneeze'|'lookAway'|'raspberry', t, dur, ... }
   chew: 0, laugh: 0, grumpy: 0, curious: 0, bounce: 0, pinch: 0,
-  crying: false, tearTimer: 0,
+  crying: false, tearTimer: 0, bubbleTimer: 0,
   blink: 0, blinkTimer: 2,
   faceSplats: [],       // stored relative to the head centre so they move with it
 };
@@ -506,11 +666,11 @@ const spoon = {
   x: 0, y: 0, svx: 0, svy: 0, speed: 0,
   loaded: true, jab: 0, teleport: true,
   trail: [],
-  // airplane-loop detection
-  turnHist: [], lastSample: null, planeCd: 0,
+  path: [], checkTimer: 0, planeCd: 0, hintCd: 0,   // airplane figure recognition
 };
 
 const pointer = { x: 700, y: 600, touch: false, down: false };
+const press = { x: 0, y: 0, t: 0, mash: false };
 const bowl = { x: 95, y: 710, r: 75 };
 
 let particles = [];
@@ -519,14 +679,15 @@ let floorSplats = [];
 let screenSplats = [];
 
 const food = () => FOODS[(S.level - 1) % FOODS.length];
+const foodName = () => t('food_' + food().id);
 const isRunny = f => f.viscosity < 0.5;
 // Runny food spills at lower speeds
 const spillSpeed = () => lerp(CONFIG.spoon.runnyMaxSpeed, CONFIG.spoon.thickMaxSpeed, food().viscosity);
-const spoonIsDown = () => dist(spoon.x, spoon.y, bowl.x, bowl.y) < bowl.r;
-const fmtTime = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+const figName = f => t('fig_' + f);
+const inGameScreen = () => ['playing', 'levelEnding', 'crying'].includes(S.screen);
 
 /* =====================================================================
-   Difficulty helpers: level and mood both make the baby harder
+   Difficulty helpers: level, time in level and mood all make the baby harder
    ===================================================================== */
 // Effective difficulty: the level, plus a bit more for every second spent in it.
 const lvl = () => (S.level - 1) + Math.min(CONFIG.timer.maxExtra, S.levelTime / CONFIG.timer.secondsPerStep);
@@ -551,36 +712,61 @@ function babySpeed() {
 }
 function nextEventGap() {
   const e = CONFIG.events;
-  return Math.max(e.minGap, rand(e.gapMin, e.gapMax) / (1 + lvl() * e.gapShrinkPerLevel));
+  const cond = S.condition ? CONFIG.conditions[S.condition].gapMult : 1;
+  return Math.max(e.minGap, rand(e.gapMin, e.gapMax) / (1 + lvl() * e.gapShrinkPerLevel) * cond);
+}
+function grabDelay() {
+  const g = CONFIG.grab;
+  return Math.max(g.minDelay, g.delay - lvl() * g.delayPerLevel);
 }
 
 // Mouth centre in world coordinates (shifts sideways when the head turns).
 function mouthPos() {
   return { x: baby.x + baby.turn * CONFIG.baby.headRadius * 0.45, y: baby.y + 48 };
 }
+// Body (tummy) placement, shared by drawing and the pat hit-test.
+function bodyBox() {
+  const b = baby;
+  return { x: lerp(b.restX, b.x, 0.35), top: lerp(b.y + 80, b.restY + 80, 0.4) };
+}
+function onTummy(x, y) {
+  const bb = bodyBox();
+  return Math.abs(x - bb.x) < 95 && y > bb.top + 10 && y < 595 &&
+         dist(x, y, baby.x, baby.y) > CONFIG.baby.headRadius;
+}
 
 /* =====================================================================
    Game flow
    ===================================================================== */
 function startGame() {
-  S.level = 1; S.score = 0; S.totalBites = 0; S.messHistory = [];
-  S.mood = CONFIG.mood.start;
+  S.level = 1; S.score = 0; S.totalBites = 0; S.messHistory = []; S.hints = {};
   startLevel();
 }
 
 function startLevel() {
   S.bites = 0; S.mess = 0; S.combo = 0; S.levelMisses = 0; S.levelTime = 0;
   S.mood = CONFIG.mood.start;
-  S.funnyCd = 0;
+  S.funnyCd = 0; S.grab = null; S.stillTimer = 0;
+  S.burpCount = 0; S.needsBurp = false; S.pats = [];
   S.eventTimer = CONFIG.events.firstDelay;
+  // Maybe the baby is under the weather this level
+  const C = CONFIG.conditions;
+  S.condition = S.level >= C.fromLevel && Math.random() < C.chance ? (Math.random() < 0.5 ? 'cold' : 'teething') : null;
+  // Airplane figure for this level
+  S.figure = S.level === 1 ? CONFIG.figures.firstLevel : pickFigure(S.figure);
+  S.figureTimer = CONFIG.figures.changeEvery; S.figurePop = 1;
+
   floorSplats = []; screenSplats = []; particles = []; floatTexts = [];
   resetBaby();
-  spoon.loaded = true; spoon.teleport = true;
+  spoon.loaded = true; spoon.teleport = true; spoon.path.length = 0;
   S.screen = 'playing';
   showScreen(null);
-  addText(view.W / 2, 190, `Level ${S.level}`, '#FF5C9E', 60, 1.8);
-  addText(view.W / 2, 245, food().name + '!', food().color, 34, 1.8);
-  addText(view.W / 2, 290, isRunny(food()) ? 'Runny: go easy!' : 'Nice and thick', '#8a6aa0', 24, 1.8);
+
+  const cx = view.W / 2;
+  addText(cx, 170, t('levelBanner', { n: S.level }), '#FF5C9E', 60, 2);
+  addText(cx, 225, foodName() + ' · ' + t(isRunny(food()) ? 'runnyIntro' : 'thickIntro'), food().color, 30, 2);
+  addText(cx, 265, t('planeIntro', { fig: figName(S.figure) }), '#6EC6FF', 26, 2.2);
+  if (S.condition) addText(cx, 305, t('cond_' + S.condition), '#2F6E9E', 28, 2.2);
 }
 
 function resetBaby() {
@@ -592,11 +778,26 @@ function resetBaby() {
   Object.assign(baby.mouth, { open: 0, state: 'closed', timer: 1.2, snap: false, nextLong: false });
 }
 
+function pickFigure(exclude) {
+  const opts = CONFIG.figures.list.filter(f => f !== exclude);
+  return opts[Math.floor(Math.random() * opts.length)];
+}
+function changeFigure() {
+  S.figure = pickFigure(S.figure);
+  S.figureTimer = CONFIG.figures.changeEvery;
+  S.figurePop = 1;
+  spoon.path.length = 0;
+  Sound.play('newfig');
+  const bp = bubblePos();
+  addText(bp.x, bp.y - 70, t('newFig'), '#6EC6FF', 24, 1.2);
+}
+
 function startLevelEnding() {
   S.screen = 'levelEnding';
   S.pendingTimer = 1.3;
+  S.grab = null;
   Sound.play('levelup');
-  addText(view.W / 2, 200, 'All gone!', '#4CC38A', 56, 1.4);
+  addText(view.W / 2, 200, t('allGone'), '#4CC38A', 56, 1.4);
   for (let i = 0; i < 60; i++) {
     particles.push({
       type: 'confetti', x: rand(0, view.W), y: rand(-80, 0), vx: rand(-60, 60), vy: rand(100, 300),
@@ -611,47 +812,53 @@ function showLevelScreen() {
   const timeBonus = Math.round(Math.max(0, CONFIG.level.parTime - S.levelTime) * CONFIG.level.timeBonusPerSec);
   S.score += bonus + timeBonus;
   S.messHistory.push(S.mess);
-  $('lvlTime').textContent = fmtTime(S.levelTime);
-  $('lvlTimeBonus').textContent = '+' + timeBonus;
-  $('lvlTitle').textContent = `Level ${S.level} complete!`;
-  $('lvlBites').textContent = S.bites;
-  $('lvlMisses').textContent = S.levelMisses;
-  $('lvlMess').textContent = messRating(S.mess);
-  $('lvlBonus').textContent = '+' + bonus;
-  $('lvlScore').textContent = S.score;
+  S.lastLevelStats = { bonus, timeBonus };
+  fillLevelScreen();
   S.screen = 'levelDone';
   showScreen('screenLevel');
+}
+function fillLevelScreen() {
+  const st = S.lastLevelStats || { bonus: 0, timeBonus: 0 };
+  $('lvlTitle').textContent = t('levelComplete', { n: S.level });
+  $('lvlBites').textContent = S.bites;
+  $('lvlMisses').textContent = S.levelMisses;
+  $('lvlTime').textContent = fmtTime(S.levelTime);
+  $('lvlTimeBonus').textContent = '+' + st.timeBonus;
+  $('lvlMess').textContent = messRating(S.mess);
+  $('lvlBonus').textContent = '+' + st.bonus;
+  $('lvlScore').textContent = S.score;
 }
 
 function startCrying() {
   S.screen = 'crying';
   S.pendingTimer = 2.6;
+  S.grab = null;
   baby.crying = true;
   baby.event = null; baby.turnTarget = 0; baby.laugh = 0; baby.chew = 0;
   Sound.play('cry');
-  addText(view.W / 2, 170, 'WAAAAH!', '#6EC6FF', 60, 2);
+  addText(view.W / 2, 170, t('waah'), '#6EC6FF', 60, 2);
 }
 
 function showGameOver() {
   S.messHistory.push(S.mess);
-  const avgMess = S.messHistory.reduce((a, b) => a + b, 0) / S.messHistory.length;
   try { S.best = Math.max(S.score, +localStorage.getItem('openWideBest') || 0); localStorage.setItem('openWideBest', S.best); }
   catch (e) { S.best = Math.max(S.best, S.score); }
+  fillGameOver();
+  S.screen = 'over';
+  showScreen('screenOver');
+}
+function fillGameOver() {
+  const avgMess = S.messHistory.reduce((a, b) => a + b, 0) / Math.max(1, S.messHistory.length);
   $('overScore').textContent = S.score;
   $('overLevel').textContent = S.level;
   $('overBites').textContent = S.totalBites;
   $('overMess').textContent = messRating(avgMess);
   $('overBest').textContent = S.best;
-  S.screen = 'over';
-  showScreen('screenOver');
 }
 
 function messRating(m) {
-  if (m < 10) return 'Spotless ✨';
-  if (m < 30) return 'Pretty tidy';
-  if (m < 55) return 'Messy';
-  if (m < 80) return 'Disaster zone';
-  return 'Food apocalypse!';
+  const r = I18N[LANG].rating;
+  return m < 10 ? r[0] : m < 30 ? r[1] : m < 55 ? r[2] : m < 80 ? r[3] : r[4];
 }
 
 function showScreen(id) {
@@ -668,24 +875,32 @@ function addMood(v) {
 }
 function addMess(v) { S.mess = clamp(S.mess + v, 0, CONFIG.mess.max); }
 
+// Show a hint only once per game.
+function hintOnce(key, x, y, text, color, life) {
+  if (S.hints[key]) return;
+  S.hints[key] = true;
+  addText(x, y, text, color, 24, life);
+}
+
 /* =====================================================================
    Player actions
    ===================================================================== */
 
 // Click / tap release: try to put the spoon in the mouth.
 function deliver() {
-  if (S.screen !== 'playing') return;
-  spoon.jab = 1;
-  if (!spoon.loaded) {
-    Sound.play('empty');
-    addText(spoon.x, spoon.y - 40, 'Empty spoon!', '#8a6aa0', 22, 0.8);
-    return;
-  }
+  if (S.screen !== 'playing' || S.grab) return;
   const b = baby, R = CONFIG.baby.headRadius, m = mouthPos();
   const onMouth = dist(spoon.x, spoon.y, m.x, m.y) < CONFIG.mouth.hitRadius;
   const onHead = dist(spoon.x, spoon.y, b.x, b.y) < R * 1.05 || onMouth;
-  const ev = b.event && b.event.type;
+  if (!onHead && onTummy(spoon.x, spoon.y)) return pat(spoon.x, spoon.y);
 
+  spoon.jab = 1;
+  if (!spoon.loaded) {
+    Sound.play('empty');
+    addText(spoon.x, spoon.y - 40, t('empty'), '#8a6aa0', 22, 0.8);
+    return;
+  }
+  const ev = b.event && b.event.type;
   if (ev === 'raspberry' && onHead) return bounceFood();
   const canEat = b.mouth.open >= CONFIG.mouth.biteThreshold && b.chew <= 0 &&
                  Math.abs(b.turn) < 0.35 && ev !== 'sneeze';
@@ -708,14 +923,23 @@ function doBite() {
   Sound.play('nom', S.combo);
   const m = mouthPos();
   addText(m.x, m.y - 90, '+' + pts, '#FF5C9E', 38, 1);
-  if (mult > 1) addText(m.x, m.y - 50, `Combo x${mult}`, '#F2A900', 26, 1);
+  if (mult > 1) addText(m.x, m.y - 50, t('combo', { m: mult }), '#F2A900', 26, 1);
   for (let i = 0; i < 10; i++) {
     const a = rand(0, TAU), sp = rand(120, 260);
     particles.push({ type: i % 2 ? 'heart' : 'star', x: m.x, y: m.y - 20, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120,
       g: 300, life: 0.9, max: 0.9, size: rand(8, 14), color: i % 2 ? '#FF5C9E' : '#FFD84D', rot: 0, vr: rand(-5, 5) });
   }
   const hc = $('hudCombo'); hc.style.transform = 'scale(1.35)'; setTimeout(() => hc.style.transform = '', 120);
-  if (S.bites >= CONFIG.level.bitesToWin) startLevelEnding();
+
+  if (S.bites >= CONFIG.level.bitesToWin) return startLevelEnding();
+
+  // Burp meter fills with each bite
+  if (!S.needsBurp && ++S.burpCount >= CONFIG.burp.bitesPerBurp) {
+    S.needsBurp = true;
+    addText(b.x, b.y - 190, t('burpNeeded'), '#1F7A4A', 30, 1.4);
+    const bb = bodyBox();
+    hintOnce('burp', bb.x, bb.top + 60, t('burpHint'), '#1F7A4A', 2.5);
+  }
 }
 
 function doSplat(x, y) {
@@ -728,16 +952,25 @@ function doSplat(x, y) {
   let dx = x - b.x, dy = y - b.y;
   const d = Math.hypot(dx, dy), maxD = R * 0.85;
   if (d > maxD) { dx *= maxD / d; dy *= maxD / d; }
-  b.faceSplats.push(makeSplat(dx, dy, rand(14, 22), f));
-  if (b.faceSplats.length > CONFIG.fx.maxFaceSplats) b.faceSplats.shift();
+  addFaceSplat(dx, dy, rand(14, 22), f);
   b.grumpy = 1.3;
   b.vx += Math.sign(b.x - x || 1) * 250; // recoil
   S.shake = Math.max(S.shake, CONFIG.fx.shakeSplat);
   Sound.play('splat');
-  addText(x, y - 50, ['Splat!', 'Yuck!', 'Blegh!', 'Nope!'][Math.floor(Math.random() * 4)], '#E8488A', 30, 0.9);
-  for (let i = 0; i < 16; i++) {
+  addText(x, y - 50, t('splat'), '#E8488A', 30, 0.9);
+  burst(x, y, 16, f);
+}
+
+function addFaceSplat(dx, dy, r, f) {
+  baby.faceSplats.push(makeSplat(dx, dy, r, f));
+  if (baby.faceSplats.length > CONFIG.fx.maxFaceSplats) baby.faceSplats.shift();
+}
+
+// A burst of food droplets; some land on the floor.
+function burst(x, y, n, f) {
+  for (let i = 0; i < n; i++) {
     const a = rand(0, TAU), sp = rand(80, 340);
-    particles.push({ type: i < 5 ? 'food' : 'dot', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 100,
+    particles.push({ type: i < n / 3 ? 'food' : 'dot', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 100,
       g: 900, life: 1.5, max: 1.5, size: rand(4, 8), color: Math.random() < 0.5 ? f.color : f.light,
       landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
   }
@@ -750,9 +983,9 @@ function dropFood() {
   S.combo = 0;
   addMess(CONFIG.mess.drop);
   addMood(-CONFIG.mood.dropPenalty);
-  Sound.play('whoops');
-  addText(spoon.x, spoon.y - 40, 'Too fast!', '#A0703C', 26, 0.9);
   if (CONFIG.funnyFace.dropResetsCooldown) S.funnyCd = CONFIG.funnyFace.cooldown;
+  Sound.play('whoops');
+  addText(spoon.x, spoon.y - 40, t('tooFast'), '#A0703C', 26, 0.9);
   particles.push({ type: 'food', x: spoon.x, y: spoon.y, vx: spoon.svx * 0.35, vy: spoon.svy * 0.35 - 150,
     g: 1300, life: 3, max: 3, size: 11, color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15), big: true });
 }
@@ -765,13 +998,13 @@ function bounceFood() {
   addMood(-CONFIG.mood.bouncePenalty);
   addMess(CONFIG.mess.bounce);
   Sound.play('splat');
-  addText(spoon.x, spoon.y - 50, 'Pbbbbt!', '#C2185B', 32, 1);
+  addText(spoon.x, spoon.y - 50, t('pbbt'), '#C2185B', 32, 1);
   particles.push({ type: 'food', x: spoon.x, y: spoon.y, vx: rand(-350, 350), vy: -650,
     g: 1300, life: 3, max: 3, size: 11, color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15), big: true });
 }
 
 function reload() {
-  if (S.screen !== 'playing' || spoon.loaded) return;
+  if (S.screen !== 'playing' || spoon.loaded || S.grab) return;
   spoon.loaded = true;
   Sound.play('scoop');
   const f = food();
@@ -780,64 +1013,72 @@ function reload() {
       g: 800, life: 0.6, max: 0.6, size: rand(3, 6), color: f.light });
 }
 
+// SPACE / 😜 button: a single tap pulls a funny face, a double tap during a sneeze pinches the nose.
+function onFunnyTap() {
+  if (S.screen !== 'playing') return;
+  if (S.grab) return mashGrab();
+  const b = baby, now = S.time;
+  const sneezing = b.event && b.event.type === 'sneeze' && !b.event.sprayed;
+  if (now - S.lastTap < CONFIG.pinch.doubleTapWindow) {
+    S.lastTap = -10;
+    if (sneezing) pinchNose();
+    return;
+  }
+  S.lastTap = now;
+  if (!sneezing) funnyFace();
+}
+
 function funnyFace() {
-  if (S.screen !== 'playing' || S.funnyCd > 0) return;
+  if (S.funnyCd > 0) return;
   const b = baby;
-  if (b.event && b.event.type === 'sneeze') { addText(b.x, b.y - 150, 'Not now!', '#8a6aa0', 24, 0.8); return; }
   if (b.event) endEvent();
   b.laugh = CONFIG.funnyFace.laughTime;
   b.chew = 0;
   S.funnyCd = CONFIG.funnyFace.cooldown;
   Sound.play('laugh');
-  addText(b.x, b.y - 150, ['Hehehe!', 'Giggle!', 'Hahaha!'][Math.floor(Math.random() * 3)], '#F2A900', 32, 1.1);
+  addText(b.x, b.y - 150, t('laugh'), '#F2A900', 32, 1.1);
 }
 
-// Pinch the nose (F + J, or a two-finger tap) to stop a sneeze.
-function tryPinch(fromTouch) {
-  if (S.screen !== 'playing') return;
+function pinchNose() {
   const b = baby, P = CONFIG.pinch;
-  const sneezing = b.event && b.event.type === 'sneeze' && !b.event.sprayed;
-  if (!sneezing) {
-    // Pinching for no reason: baby is not amused
-    b.pinch = P.showTime; b.grumpy = 0.8;
-    addMood(-P.annoyPenalty);
-    Sound.play('honk');
-    addText(b.x, b.y - 150, 'Hey!', '#E8488A', 28, 0.8);
-    return;
-  }
-  if (!fromTouch && !spoonIsDown()) {
-    addText(b.x, b.y - 190, 'Put the spoon down first!', '#8a6aa0', 26, 0.9);
-    Sound.play('empty');
-    return;
-  }
   endEvent();
   b.pinch = P.showTime; b.bounce = 1;
   S.score += P.points;
   addMood(P.moodGain);
   Sound.play('honk');
-  addText(b.x, b.y - 150, `Sneeze stopped! +${P.points}`, '#4CC38A', 32, 1.2);
+  addText(b.x, b.y - 150, t('sneezeStopped', { p: P.points }), '#4CC38A', 32, 1.2);
 }
 
-// Runny soups drip off a moving spoon, adding a little mess.
-function updateDrips(dt) {
-  const C = CONFIG.spoon, f = food();
-  if (!spoon.loaded || f.viscosity >= C.dripBelow) return;
-  const ratio = spoon.speed / spillSpeed();
-  if (ratio < C.dripStartRatio) return;
-  const runniness = (C.dripBelow - f.viscosity) / C.dripBelow;
-  const rate = C.dripMaxPerSec * runniness * (ratio - C.dripStartRatio) / (1 - C.dripStartRatio);
-  if (Math.random() < rate * dt) {
-    addMess(C.dripMess);
-    particles.push({ type: 'food', x: spoon.x, y: spoon.y + 6, vx: spoon.svx * 0.2, vy: 0,
-      g: 1300, life: 3, max: 3, size: rand(3, 5), color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
-  }
+// Pat the tummy: enough pats in a row gets the burp out.
+function pat(x, y) {
+  const B = CONFIG.burp;
+  S.pats = S.pats.filter(tm => S.time - tm < B.patWindow);
+  S.pats.push(S.time);
+  baby.bounce = Math.max(baby.bounce, 0.35);
+  Sound.play('pat');
+  addText(x, y - 20, t('pat'), '#1F7A4A', 22, 0.5);
+  if (S.needsBurp && S.pats.length >= B.patsNeeded) doBurp();
+}
+
+function doBurp() {
+  const b = baby, B = CONFIG.burp;
+  S.needsBurp = false; S.burpCount = 0; S.pats = [];
+  S.score += B.points;
+  addMood(B.moodGain);
+  b.bounce = 1;
+  Sound.play('burp');
+  const m = mouthPos();
+  addText(m.x, m.y - 200, t('burped', { p: B.points }), '#1F7A4A', 36, 1.2);
+  for (let i = 0; i < 8; i++)
+    particles.push({ type: 'bubble', x: m.x + rand(-20, 20), y: m.y, vx: rand(-60, 60), vy: rand(-160, -80),
+      g: 0, life: 1, max: 1, size: rand(5, 11), color: '#9FE3C0' });
 }
 
 function triggerAirplane() {
   const b = baby;
-  spoon.turnHist.length = 0;
+  spoon.path.length = 0;
   spoon.planeCd = CONFIG.airplane.cooldown;
-  if (b.curious <= 0) addText(spoon.x, spoon.y - 50, 'Wheee! ✈', '#6EC6FF', 30, 1);
+  if (b.curious <= 0) addText(spoon.x, spoon.y - 50, t('wheee'), '#6EC6FF', 30, 1);
   b.curious = CONFIG.airplane.curiousTime;
   Sound.play('airplane');
   // Curious baby opens up soon, and for longer.
@@ -846,13 +1087,61 @@ function triggerAirplane() {
   for (let i = 0; i < 8; i++)
     particles.push({ type: 'star', x: b.x + rand(-80, 80), y: b.y - rand(100, 150), vx: rand(-40, 40), vy: rand(-80, -30),
       g: 0, life: 0.8, max: 0.8, size: rand(6, 10), color: '#6EC6FF', rot: 0, vr: rand(-4, 4) });
+  // Harder levels switch to a new figure after each success
+  if (S.level >= CONFIG.figures.changeFromLevel) changeFigure();
+}
+
+/* ---------- Spoon grab (tug-of-war) ---------- */
+function startGrab() {
+  S.grab = { x: spoon.x, y: spoon.y, power: CONFIG.grab.startPower, t: 0 };
+  S.stillTimer = 0;
+  spoon.path.length = 0;
+  baby.curious = 0;
+  Sound.play('grab');
+  addText(spoon.x, spoon.y - 110, t('grabbed'), '#E8488A', 32, 1);
+}
+
+function mashGrab() {
+  if (!S.grab) return;
+  S.grab.power = Math.min(1, S.grab.power + CONFIG.grab.mashPower);
+  Sound.play('mash', S.grab.power);
+  if (S.grab.power >= 1) endGrab(true);
+}
+
+function updateGrab(dt) {
+  const g = S.grab, C = CONFIG.grab;
+  g.t += dt;
+  g.power -= (C.pull + lvl() * C.pullPerLevel) * dt;
+  if (g.power <= 0 || g.t > C.maxTime) endGrab(false);
+}
+
+function endGrab(won) {
+  const g = S.grab, b = baby;
+  S.grab = null;
+  spoon.teleport = true;   // snap back to the pointer without counting it as a fast move
+  if (won) {
+    b.grumpy = 1;
+    Sound.play('click');
+    addText(g.x, g.y - 80, t('grabWin'), '#4CC38A', 30, 1);
+  } else {
+    // Baby wins and smears the food in their hair
+    const f = food();
+    spoon.loaded = false; S.combo = 0;
+    addMess(CONFIG.grab.hairMess);
+    addFaceSplat(rand(-40, 40), -CONFIG.baby.headRadius * 0.8, rand(18, 26), f);
+    addFaceSplat(rand(-60, 60), -CONFIG.baby.headRadius * 0.65, rand(12, 18), f);
+    b.laugh = 0.8;
+    Sound.play('splat'); Sound.play('laugh');
+    addText(b.x, b.y - 160, t('grabLose'), '#E8488A', 30, 1.3);
+  }
 }
 
 /* =====================================================================
    Random baby events: sneeze, look away, raspberry
    ===================================================================== */
 function pickEvent() {
-  const w = CONFIG.events.weights;
+  const w = { ...CONFIG.events.weights };
+  if (S.condition) for (const [k, m] of Object.entries(CONFIG.conditions[S.condition].weights)) w[k] *= m;
   const total = w.sneeze + w.lookAway + w.raspberry;
   let r = Math.random() * total;
   if ((r -= w.sneeze) < 0) return 'sneeze';
@@ -866,12 +1155,8 @@ function startEvent(type) {
   if (type === 'sneeze') {
     b.event = { type, t: 0, dur: e.sneezeWindup + e.sneezeBurst, sprayed: false };
     Sound.play('ah');
-    addText(b.x, b.y - 150, 'Ah... ahh...', '#8a6aa0', 28, e.sneezeWindup);
-    if (!S.pinchHintShown) {
-      S.pinchHintShown = true;
-      const how = pointer.touch ? 'two-finger tap!' : `spoon in bowl + ${CONFIG.pinch.keyLabel}!`;
-      addText(b.x, b.y - 190, 'Pinch the nose: ' + how, '#4CC38A', 24, e.sneezeWindup);
-    }
+    addText(b.x, b.y - 150, t('ah'), '#8a6aa0', 28, e.sneezeWindup);
+    hintOnce('pinch', b.x, b.y - 195, t(pointer.touch ? 'pinchHintTouch' : 'pinchHintKey'), '#4CC38A', e.sneezeWindup + 0.5);
   } else if (type === 'lookAway') {
     b.event = { type, t: 0, dur: rand(e.lookAwayMin, e.lookAwayMax) };
     b.turnTarget = Math.random() < 0.5 ? -1 : 1;
@@ -902,26 +1187,140 @@ function endEvent() {
 }
 
 function doSneeze() {
-  const m = mouthPos(), f = food();
-  S.shake = CONFIG.fx.shakeSneeze;
+  const m = mouthPos(), f = food(), B = CONFIG.burp;
+  const spitUp = S.needsBurp;   // skipped the burp: this one's a spit-up
+  S.shake = CONFIG.fx.shakeSneeze * (spitUp ? 1.4 : 1);
   Sound.play('choo');
-  addText(m.x, m.y - 190, 'ACHOO!', '#E8488A', 52, 1.1);
-  addMess(CONFIG.mess.sneeze);
+  addText(m.x, m.y - 190, t('choo'), '#E8488A', 52, 1.1);
+  addMess(spitUp ? B.spitUpMess : CONFIG.mess.sneeze);
+  if (spitUp) {
+    S.needsBurp = false; S.burpCount = 0;
+    addMood(B.spitUpMood);
+    addText(m.x, m.y - 140, t('spitUp'), '#1F7A4A', 28, 1.6);
+  }
   // Spray food everywhere; it lands on the floor.
-  for (let i = 0; i < 28; i++) {
+  for (let i = 0; i < (spitUp ? 55 : 28); i++) {
     const a = rand(-Math.PI * 0.95, -Math.PI * 0.05) + (Math.random() < 0.5 ? 0 : Math.PI);
     const sp = rand(250, 750);
     particles.push({ type: 'food', x: m.x, y: m.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.8,
-      g: 1100, life: 3, max: 3, size: rand(4, 9), color: Math.random() < 0.6 ? f.color : f.light,
+      g: 1100, life: 3, max: 3, size: rand(4, spitUp ? 12 : 9), color: Math.random() < 0.6 ? f.color : f.light,
       landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
   }
   // And a few splats right on the "camera".
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < (spitUp ? 6 : 3); i++) {
     screenSplats.push(Object.assign(makeSplat(rand(view.W * 0.15, view.W * 0.85), rand(150, 650), rand(35, 60), f),
       { life: 3, max: 3 }));
   }
   // A loaded spoon close by gets its food knocked off.
   if (spoon.loaded && dist(spoon.x, spoon.y, m.x, m.y) < 260) dropFood();
+}
+
+/* =====================================================================
+   Airplane figure recognition
+   The spoon path is resampled, lightly smoothed, then we look for a
+   closed loop (≈ one full turn that ends near its start) and count its
+   corners: circle ≤ 1, triangle = 3, square = 4.
+   ===================================================================== */
+function resamplePath(pts, step) {
+  const out = [{ x: pts[0].x, y: pts[0].y }];
+  let px = pts[0].x, py = pts[0].y, acc = 0;
+  for (let i = 1; i < pts.length; i++) {
+    const cx = pts[i].x, cy = pts[i].y;
+    let d = Math.hypot(cx - px, cy - py);
+    while (acc + d >= step && d > 0) {
+      const k = (step - acc) / d;
+      px += (cx - px) * k; py += (cy - py) * k;
+      out.push({ x: px, y: py });
+      d = Math.hypot(cx - px, cy - py); acc = 0;
+    }
+    acc += d; px = cx; py = cy;
+  }
+  return out;
+}
+function smoothPath(p) {
+  return p.map((_, i) => {
+    const a = p[Math.max(0, i - 1)], b = p[i], c = p[Math.min(p.length - 1, i + 1)];
+    return { x: (a.x + b.x + c.x) / 3, y: (a.y + b.y + c.y) / 3 };
+  });
+}
+function pathLength(p) {
+  let L = 0;
+  for (let i = 1; i < p.length; i++) L += Math.hypot(p[i].x - p[i - 1].x, p[i].y - p[i - 1].y);
+  return L;
+}
+function wrapAngle(v) { while (v > Math.PI) v -= TAU; while (v < -Math.PI) v += TAU; return v; }
+function bboxDiag(p) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const q of p) { x0 = Math.min(x0, q.x); y0 = Math.min(y0, q.y); x1 = Math.max(x1, q.x); y1 = Math.max(y1, q.y); }
+  return Math.hypot(x1 - x0, y1 - y0);
+}
+
+// Walk back from the newest point until the path has turned about a full lap,
+// and keep the start point closest to the current position.
+function findLoop(r) {
+  const A = CONFIG.airplane, end = r.length - 1;
+  let sum = 0, best = -1, bestD = Infinity;
+  for (let i = end - 1; i >= 1; i--) {
+    let d = wrapAngle(Math.atan2(r[i + 1].y - r[i].y, r[i + 1].x - r[i].x) - Math.atan2(r[i].y - r[i - 1].y, r[i].x - r[i - 1].x));
+    if (Math.abs(d) > 2.8) d = 0;   // ignore sharp reversals: zig-zags aren't loops
+    sum += d;
+    const a = Math.abs(sum);
+    if (a > A.maxLoopAngle) break;
+    if (a >= A.loopAngle) {
+      const dd = dist(r[i].x, r[i].y, r[end].x, r[end].y);
+      if (dd < bestD) { bestD = dd; best = i; }
+    }
+  }
+  if (best < 0) return null;
+  const loop = r.slice(best, end + 1), diag = bboxDiag(loop);
+  return diag >= A.minSize && bestD <= diag * A.closeRatio ? loop : null;
+}
+
+// Corners around a closed loop: direction change measured over a 4-sample baseline (robust to jitter).
+function countCorners(loop) {
+  const B = 4, L = pathLength(loop);
+  const q = resamplePath(loop, L / 48);
+  if (q.length > 4 && dist(q[0].x, q[0].y, q[q.length - 1].x, q[q.length - 1].y) < L / 96) q.pop();
+  const n = q.length, g = i => q[((i % n) + n) % n];
+  const turn = [];
+  for (let i = 0; i < n; i++) {
+    const a = g(i - B), b = g(i), c = g(i + B);
+    turn.push(Math.abs(wrapAngle(Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(b.y - a.y, b.x - a.x))));
+  }
+  const cand = turn.map((v, i) => [v, i]).filter(c => c[0] > CONFIG.airplane.cornerAngle).sort((a, b) => b[0] - a[0]);
+  const picked = [];
+  for (const [, i] of cand) if (picked.every(j => Math.min(Math.abs(j - i), n - Math.abs(j - i)) >= B + 2)) picked.push(i);
+  return picked.length;
+}
+
+// 'match' if the recent path draws the figure, 'wrong' if it's a loop of another shape, null otherwise.
+function matchFigure(fig, path) {
+  if (path.length < 8) return null;
+  const r = smoothPath(resamplePath(path, CONFIG.airplane.sampleStep));
+  if (r.length < 10) return null;
+  const loop = findLoop(r);
+  if (!loop) return null;
+  const c = countCorners(loop);
+  const ok = fig === 'circle' ? c <= 1 : fig === 'triangle' ? c === 3 : c === 4;
+  return ok ? 'match' : 'wrong';
+}
+
+function trackAirplane(dt) {
+  const A = CONFIG.airplane, path = spoon.path;
+  if (!spoon.loaded || S.grab) { path.length = 0; return; }
+  const last = path[path.length - 1];
+  if (!last || dist(last.x, last.y, spoon.x, spoon.y) >= 4) path.push({ x: spoon.x, y: spoon.y, t: S.time });
+  while (path.length && S.time - path[0].t > A.window) path.shift();
+  spoon.checkTimer -= dt;
+  if (spoon.checkTimer > 0 || spoon.planeCd > 0) return;
+  spoon.checkTimer = 0.05;
+  const res = matchFigure(S.figure, path);
+  if (res === 'match') triggerAirplane();
+  else if (res === 'wrong' && spoon.hintCd <= 0) {
+    spoon.hintCd = A.hintCooldown;
+    const bp = bubblePos();
+    addText(bp.x, bp.y - 70, t('wantsFig', { fig: figName(S.figure) }), '#6EC6FF', 24, 1.2);
+  }
 }
 
 /* =====================================================================
@@ -955,9 +1354,20 @@ function updateBaby(dt, gameplay) {
     }
   }
 
-  // Events
+  // Gassy baby: little bubbles
+  if (gameplay && S.needsBurp) {
+    b.bubbleTimer -= dt;
+    if (b.bubbleTimer <= 0) {
+      b.bubbleTimer = rand(0.3, 0.7);
+      const m = mouthPos();
+      particles.push({ type: 'bubble', x: m.x + rand(-25, 25), y: m.y, vx: rand(-20, 20), vy: rand(-90, -50),
+        g: 0, life: 1.2, max: 1.2, size: rand(4, 8), color: '#9FE3C0' });
+    }
+  }
+
+  // Events (paused while the baby holds the spoon)
   if (b.event) updateEvent(dt);
-  else if (gameplay && b.chew <= 0 && b.laugh <= 0) {
+  else if (gameplay && !S.grab && b.chew <= 0 && b.laugh <= 0) {
     S.eventTimer -= dt;
     if (S.eventTimer <= 0 && b.mouth.state === 'closed' && b.mouth.open < 0.2) startEvent(pickEvent());
   }
@@ -981,7 +1391,7 @@ function updateHead(dt, gameplay) {
   }
 
   // Dodge a loaded spoon that comes near a closed mouth
-  if (gameplay && spoon.loaded && b.curious <= 0 && b.dodge <= 0 && b.laugh <= 0 && b.chew <= 0 && b.mouth.open < 0.5) {
+  if (gameplay && !S.grab && spoon.loaded && b.curious <= 0 && b.dodge <= 0 && b.laugh <= 0 && b.chew <= 0 && b.mouth.open < 0.5) {
     const m = mouthPos();
     const chance = C.dodgeChancePerSec * (1 + lvl() * C.dodgePerLevel) * moodStress();
     if (dist(spoon.x, spoon.y, m.x, m.y) < C.dodgeRadius && Math.random() < chance * dt) {
@@ -995,9 +1405,10 @@ function updateHead(dt, gameplay) {
     }
   }
 
-  // Target with event/crying adjustments
+  // Target with event/crying/grab adjustments
   let tx = b.tx, ty = b.ty;
   if (b.crying) { tx = b.restX; ty = b.restY; }
+  if (S.grab) { tx = b.x; ty = b.y; }
   if (b.event && b.event.type === 'sneeze') ty = b.event.sprayed ? b.restY + 30 : b.restY - 40;
 
   // Smooth "springy" follow with a speed cap
@@ -1019,6 +1430,7 @@ function updateMouth(dt) {
   const ev = b.event && b.event.type;
 
   if (b.crying) target = 0.85;
+  else if (S.grab) target = 0.2;
   else if (b.chew > 0) target = 0;
   else if (b.laugh > 0) target = 1;
   else if (ev === 'sneeze') target = b.event.sprayed ? 0.9 : 0.4; // the half-open windup is a trap!
@@ -1055,11 +1467,19 @@ function updateMouth(dt) {
 }
 
 function updateSpoon(dt, gameplay) {
+  // While grabbed, the spoon is stuck in the baby's fist
+  if (S.grab) {
+    const m = mouthPos(), pull = (1 - S.grab.power) * 0.3;
+    spoon.x = lerp(S.grab.x, m.x, pull); spoon.y = lerp(S.grab.y, m.y, pull);
+    spoon.svx = spoon.svy = spoon.speed = 0;
+    spoon.jab = 0;
+    return;
+  }
   const offY = pointer.touch ? CONFIG.spoon.touchOffsetY : 0;
   const nx = pointer.x, ny = pointer.y - offY;
   if (spoon.teleport) {
     spoon.x = nx; spoon.y = ny; spoon.svx = spoon.svy = 0; spoon.teleport = false;
-    spoon.trail.length = 0; spoon.lastSample = null; spoon.turnHist.length = 0;
+    spoon.trail.length = 0; spoon.path.length = 0;
   } else {
     const a = 1 - Math.exp(-dt / CONFIG.spoon.speedSmoothing);
     spoon.svx += ((nx - spoon.x) / dt - spoon.svx) * a;
@@ -1069,6 +1489,7 @@ function updateSpoon(dt, gameplay) {
   spoon.speed = Math.hypot(spoon.svx, spoon.svy);
   spoon.jab = Math.max(0, spoon.jab - dt * 4);
   spoon.planeCd = Math.max(0, spoon.planeCd - dt);
+  spoon.hintCd = Math.max(0, spoon.hintCd - dt);
 
   spoon.trail.push({ x: spoon.x, y: spoon.y, t: S.time });
   while (spoon.trail.length && S.time - spoon.trail[0].t > 0.35) spoon.trail.shift();
@@ -1076,30 +1497,29 @@ function updateSpoon(dt, gameplay) {
   if (!gameplay) return;
   if (spoon.loaded && spoon.speed > spillSpeed()) dropFood();
   updateDrips(dt);
-  trackAirplane();
+  trackAirplane(dt);
+
+  // Hovering still near the baby for too long: grabbed!
+  const b = baby, m = mouthPos(), C = CONFIG.grab;
+  const tempting = spoon.loaded && !b.event && !b.crying && b.laugh <= 0 && b.chew <= 0 && b.mouth.open < 0.3 &&
+                   spoon.speed < C.stillSpeed && dist(spoon.x, spoon.y, m.x, m.y) < C.radius;
+  S.stillTimer = tempting ? S.stillTimer + dt : 0;
+  if (S.stillTimer > grabDelay()) startGrab();
 }
 
-// Sum up how much the spoon's direction has turned recently.
-// A full loop in one direction = ~360° of turning = airplane!
-function trackAirplane() {
-  const A = CONFIG.airplane;
-  if (!spoon.loaded) { spoon.turnHist.length = 0; spoon.lastSample = null; return; }
-  const last = spoon.lastSample;
-  if (!last) { spoon.lastSample = { x: spoon.x, y: spoon.y, ang: null }; return; }
-  const dx = spoon.x - last.x, dy = spoon.y - last.y;
-  if (Math.hypot(dx, dy) >= A.minStep) {
-    const ang = Math.atan2(dy, dx);
-    if (last.ang !== null) {
-      let d = ang - last.ang;
-      while (d > Math.PI) d -= TAU;
-      while (d < -Math.PI) d += TAU;
-      if (Math.abs(d) < 2.2) spoon.turnHist.push({ t: S.time, d }); // ignore sharp reversals (zig-zags aren't loops)
-    }
-    spoon.lastSample = { x: spoon.x, y: spoon.y, ang };
+// Runny soups drip off a moving spoon, adding a little mess.
+function updateDrips(dt) {
+  const C = CONFIG.spoon, f = food();
+  if (!spoon.loaded || f.viscosity >= C.dripBelow) return;
+  const ratio = spoon.speed / spillSpeed();
+  if (ratio < C.dripStartRatio) return;
+  const runniness = (C.dripBelow - f.viscosity) / C.dripBelow;
+  const rate = C.dripMaxPerSec * runniness * (ratio - C.dripStartRatio) / (1 - C.dripStartRatio);
+  if (Math.random() < rate * dt) {
+    addMess(C.dripMess);
+    particles.push({ type: 'food', x: spoon.x, y: spoon.y + 6, vx: spoon.svx * 0.2, vy: 0,
+      g: 1300, life: 3, max: 3, size: rand(3, 5), color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
   }
-  while (spoon.turnHist.length && S.time - spoon.turnHist[0].t > A.window) spoon.turnHist.shift();
-  const total = spoon.turnHist.reduce((s, h) => s + h.d, 0);
-  if (Math.abs(total) > A.loopAngle && spoon.planeCd <= 0) triggerAirplane();
 }
 
 function updateParticles(dt) {
@@ -1119,8 +1539,8 @@ function updateParticles(dt) {
   }
   particles = particles.filter(p => p.life > 0);
 
-  for (const t of floatTexts) { t.life -= dt; t.y -= 40 * dt; }
-  floatTexts = floatTexts.filter(t => t.life > 0);
+  for (const tx of floatTexts) { tx.life -= dt; tx.y -= 40 * dt; }
+  floatTexts = floatTexts.filter(tx => tx.life > 0);
 
   for (const s of screenSplats) { s.life -= dt; s.y += 12 * dt; } // slowly slide down the screen
   screenSplats = screenSplats.filter(s => s.life > 0);
@@ -1139,9 +1559,14 @@ function updateHUD() {
   setHud('hudScore', 't', S.score, (e, v) => e.textContent = v);
   setHud('hudTimer', 't', fmtTime(S.levelTime), (e, v) => e.textContent = '⏱ ' + v);
   setHud('hudTimer', 'hot', S.levelTime > CONFIG.timer.hotAfter, (e, v) => e.classList.toggle('hot', v));
-  setHud('hudFood', 't', food().name, (e, v) => e.textContent = `🥣 ${v} · ${isRunny(food()) ? 'runny' : 'thick'}`);
+  setHud('hudCond', 't', S.condition ? t('cond_' + S.condition) : '', (e, v) => { e.textContent = v; e.classList.toggle('hidden', !v); });
+  setHud('hudFood', 't', `🥣 ${foodName()} · ${t(isRunny(food()) ? 'runny' : 'thick')}`, (e, v) => e.textContent = v);
+  const n = CONFIG.burp.bitesPerBurp;
+  setHud('hudBurp', 't', S.needsBurp ? `💨 ${t('burpMe')}` : `💨 ${t('burp')} ${'●'.repeat(S.burpCount)}${'○'.repeat(n - S.burpCount)}`,
+    (e, v) => e.textContent = v);
+  setHud('hudBurp', 'alert', S.needsBurp, (e, v) => e.classList.toggle('alert', v));
   const mult = Math.min(CONFIG.score.maxMultiplier, 1 + (S.combo - 1) * CONFIG.score.comboStep);
-  setHud('hudCombo', 't', S.combo > 1 ? `Combo x${mult}` : '', (e, v) => { e.textContent = v; e.classList.toggle('hidden', !v); });
+  setHud('hudCombo', 't', S.combo > 1 ? t('combo', { m: mult }) : '', (e, v) => { e.textContent = v; e.classList.toggle('hidden', !v); });
   const mood = Math.round(S.mood);
   setHud('moodFill', 'w', mood, (e, v) => {
     e.style.width = v + '%';
@@ -1159,8 +1584,12 @@ function update(dt) {
   if (gameplay) {
     S.funnyCd = Math.max(0, S.funnyCd - dt);
     S.levelTime += dt;
-    if (baby.chew <= 0) addMood(-CONFIG.mood.decayPerSec * dt);
+    if (baby.chew <= 0) addMood(-CONFIG.mood.decayPerSec * (S.needsBurp ? CONFIG.burp.moodDecayMult : 1) * dt);
+    if (S.grab) updateGrab(dt);
+    // Harder levels: the airplane figure changes over time
+    if (S.level >= CONFIG.figures.changeFromLevel && (S.figureTimer -= dt) <= 0) changeFigure();
   }
+  S.figurePop = Math.max(0, S.figurePop - dt * 2);
   if (S.screen === 'crying' || S.screen === 'levelEnding') {
     S.pendingTimer -= dt;
     if (S.pendingTimer <= 0) S.screen === 'crying' ? showGameOver() : showLevelScreen();
@@ -1232,8 +1661,26 @@ function drawHeart(x, y, s, color) {
   ctx.fillStyle = color; ctx.fill(); ctx.restore();
 }
 
+// Outline of an airplane figure, centred on (x, y), about 2*s wide.
+function figurePath(fig, x, y, s) {
+  ctx.beginPath();
+  if (fig === 'circle') ctx.arc(x, y, s, 0, TAU);
+  else if (fig === 'square') ctx.rect(x - s * 0.85, y - s * 0.85, s * 1.7, s * 1.7);
+  else { ctx.moveTo(x, y - s); ctx.lineTo(x + s * 0.95, y + s * 0.7); ctx.lineTo(x - s * 0.95, y + s * 0.7); ctx.closePath(); }
+}
+
 function addText(x, y, text, color, size, life) {
   floatTexts.push({ x, y, text, color, size, life, max: life });
+}
+
+function drawText(text, x, y, color, size, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.font = `bold ${size}px "Trebuchet MS", "Segoe UI", sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = size * 0.18; ctx.strokeStyle = '#fff'; ctx.lineJoin = 'round';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
 }
 
 /* =====================================================================
@@ -1248,11 +1695,9 @@ function drawBackground() {
   // Wall
   ctx.fillStyle = '#FFF1D0';
   ctx.fillRect(L, T, R - L, F - T);
-  ctx.fillStyle = '#FFE3B0';
   for (let x = Math.floor(L / 80) * 80; x < R; x += 80)
-    for (let y = Math.floor(T / 80) * 80; y < F; y += 80) {
+    for (let y = Math.floor(T / 80) * 80; y < F; y += 80)
       circle(x + ((y / 80) % 2 ? 40 : 0), y, 7, '#FFE3B0');
-    }
 
   // Window with sky
   const wx = W * 0.82, wy = 150;
@@ -1267,7 +1712,7 @@ function drawBackground() {
   ctx.strokeStyle = '#D9A6FF'; ctx.lineWidth = 3; ctx.stroke();
   const cols = ['#FF5C9E', '#FFD84D', '#4CC38A', '#6EC6FF', '#B57BFF'];
   for (let i = 0, x = L + 30; x < R; x += 70, i++) {
-    const t = (x - L) / (R - L), y = 70 + 120 * t * (1 - t); // follows the garland curve
+    const u = (x - L) / (R - L), y = 70 + 120 * u * (1 - u); // follows the garland curve
     ctx.beginPath(); ctx.moveTo(x - 16, y); ctx.lineTo(x + 16, y); ctx.lineTo(x, y + 30); ctx.closePath();
     ctx.fillStyle = cols[i % cols.length]; ctx.fill();
   }
@@ -1301,14 +1746,21 @@ function drawBowl() {
     const p = (Math.sin(S.time * 6) + 1) / 2;
     ctx.beginPath(); ctx.arc(x, y, bowl.r + p * 10, 0, TAU);
     ctx.strokeStyle = `rgba(255,92,158,${0.4 + p * 0.5})`; ctx.lineWidth = 5; ctx.stroke();
-    drawText('Refill!', x, y - 70, '#FF5C9E', 24, 1);
+    drawText(t('refill'), x, y - 70, '#FF5C9E', 24, 1);
   }
 }
 
+// Where the grabbing hand is: rests on the tray, reaches out when tempted, holds the spoon when grabbing.
+function handReach(side) {
+  const b = baby, bx = bodyBox().x;
+  const towardSpoon = Math.sign(spoon.x - bx) || 1;
+  if (side !== towardSpoon || !inGameScreen()) return 0;
+  if (S.grab) return 1;
+  return clamp((S.stillTimer / grabDelay() - 0.5) * 0.7, 0, 0.35); // telegraph: the hand starts reaching
+}
+
 function drawChairAndBody() {
-  const b = baby, rx = b.restX;
-  const bx = lerp(rx, b.x, 0.35);
-  const topY = lerp(b.y + 80, b.restY + 80, 0.4);
+  const b = baby, rx = b.restX, bb = bodyBox(), bx = bb.x, topY = bb.top;
 
   // Chair legs
   line(rx - 110, 600, rx - 160, 790, '#FF8FB8', 14);
@@ -1318,8 +1770,9 @@ function drawChairAndBody() {
   rrect(rx - 140, 370, 280, 240, 50); ctx.fillStyle = '#FF7BAC'; ctx.fill();
   rrect(rx - 120, 390, 240, 200, 40); ctx.fillStyle = '#FF9CC2'; ctx.fill();
 
-  // Body (onesie) with bib
-  rrect(bx - 95, topY, 190, 600 - topY, 60); ctx.fillStyle = '#6EC6FF'; ctx.fill();
+  // Body (onesie) with bib; wobbles when patted or gassy
+  const gassy = S.needsBurp && S.screen === 'playing' ? Math.sin(S.time * 9) * 3 : 0;
+  rrect(bx - 95 - gassy, topY, 190 + gassy * 2, 600 - topY, 60); ctx.fillStyle = '#6EC6FF'; ctx.fill();
   for (let i = 0; i < 5; i++) circle(bx - 60 + i * 30, topY + 110 + (i % 2) * 20, 6, '#A8DEFF');
   ctx.beginPath();
   ctx.moveTo(bx - 60, topY + 15);
@@ -1333,25 +1786,26 @@ function drawChairAndBody() {
   rrect(rx - 175, 552, 350, 36, 16); ctx.fillStyle = '#FFFFFF'; ctx.fill();
   rrect(rx - 175, 578, 350, 10, 5); ctx.fillStyle = '#F1DDF5'; ctx.fill();
 
-  // Arms and hands (they flap when laughing or crying)
+  // Arms and hands (they flap when laughing or crying, and reach for a lingering spoon)
   const flap = (b.laugh > 0 || b.crying) ? Math.sin(S.time * 25) * 18 : Math.sin(S.time * 2) * 3;
   for (const side of [-1, 1]) {
     const sx = bx + side * 78, sy = topY + 45;
-    const hx = rx + side * 120, hy = 555 - (side === 1 ? flap : -flap);
+    const reach = handReach(side);
+    const hx = lerp(rx + side * 120, spoon.x, reach), hy = lerp(555 - (side === 1 ? flap : -flap), spoon.y + 10, reach);
     line(sx, sy, hx, hy, '#6EC6FF', 30);
-    circle(hx, hy, 20, '#FFD2AE');
+    if (reach < 1) circle(hx, hy, 20, '#FFD2AE'); // while grabbing, the fist is drawn over the spoon
   }
 }
 
 function drawHead() {
-  const b = baby, R = CONFIG.baby.headRadius, f = food();
+  const b = baby, R = CONFIG.baby.headRadius;
   const ev = b.event && b.event.type;
-  const t = S.time;
+  const tm = S.time;
 
   ctx.save();
   let hx = b.x, hy = b.y;
-  if (b.crying) hx += Math.sin(t * 30) * 4;
-  if (b.laugh > 0) hy += Math.sin(t * 30) * 4;
+  if (b.crying) hx += Math.sin(tm * 30) * 4;
+  if (b.laugh > 0) hy += Math.sin(tm * 30) * 4;
   ctx.translate(hx, hy);
   // Squash-and-stretch bounce after a bite
   const sq = Math.sin(b.bounce * Math.PI * 3) * 0.09 * b.bounce;
@@ -1369,11 +1823,11 @@ function drawHead() {
   ctx.beginPath(); ctx.arc(fx * 0.5, -R + 8, 18, Math.PI * 0.9, Math.PI * 2.3);
   ctx.strokeStyle = '#A0703C'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
 
-  // Cheeks (puffed while chewing)
-  const cheekR = b.chew > 0 ? 26 + Math.sin(t * 25) * 3 : 20;
-  ctx.globalAlpha = 0.55;
-  circle(fx - 62, 30, cheekR, '#FF9FB5');
-  circle(fx + 62, 30, cheekR, '#FF9FB5');
+  // Cheeks (puffed while chewing, flushed when teething)
+  const cheekR = b.chew > 0 ? 26 + Math.sin(tm * 25) * 3 : 20;
+  ctx.globalAlpha = S.condition === 'teething' ? 0.8 : 0.55;
+  circle(fx - 62, 30, cheekR, S.condition === 'teething' ? '#FF7F9A' : '#FF9FB5');
+  circle(fx + 62, 30, cheekR, S.condition === 'teething' ? '#FF7F9A' : '#FF9FB5');
   ctx.globalAlpha = 1;
 
   // Eyes
@@ -1386,17 +1840,18 @@ function drawHead() {
   // Pupils look at the spoon (or away during look-away)
   let lookX = 0, lookY = 0;
   if (ev === 'lookAway') { lookX = b.turnTarget * 7; lookY = -2; }
-  else if (['playing', 'levelEnding'].includes(S.screen)) {
+  else if (inGameScreen()) {
     const dx = spoon.x - hx, dy = spoon.y - hy, d = Math.hypot(dx, dy) || 1;
     const m = Math.min(7, d / 30);
     lookX = dx / d * m; lookY = dy / d * m;
   }
+  const wide = b.curious > 0 || S.grab || S.stillTimer > 0.5;
   for (const side of [-1, 1]) {
     const ex = fx + side * 38, ey = -12;
     ctx.strokeStyle = '#4A2C2A'; ctx.lineWidth = 5; ctx.lineCap = 'round';
     if (eyeMode === 'open') {
       ellipse(ex, ey, 17, 19, '#fff');
-      circle(ex + lookX, ey + lookY, b.curious > 0 ? 12 : 10, '#3B2A4A');
+      circle(ex + lookX, ey + lookY, wide ? 12 : 10, '#3B2A4A');
       circle(ex + lookX - 3, ey + lookY - 4, 3.5, '#fff');
     } else if (eyeMode === 'blink') {
       line(ex - 13, ey, ex + 13, ey, '#4A2C2A', 5);
@@ -1419,25 +1874,28 @@ function drawHead() {
     line(ex - side * 16, outer, ex + side * 10, inner, '#A0703C', 5);
   }
 
-  // Nose (squished while pinched)
+  // Nose: red with a cold, squished while pinched
+  const cold = S.condition === 'cold';
+  const noseCol = cold ? '#FF7A7A' : '#F5B996';
   if (b.pinch > 0) {
-    ellipse(fx, 16, 4, 6, '#F5B996');
+    ellipse(fx, 16, 4, 6, noseCol);
     const squeeze = 12 + Math.sin(b.pinch * 30) * 2;
     for (const side of [-1, 1]) {
       ellipse(fx + side * squeeze, 16, 11, 14, '#F2C4A0');
       ctx.beginPath(); ctx.ellipse(fx + side * squeeze, 16, 11, 14, 0, 0, TAU);
       ctx.strokeStyle = '#D9A07E'; ctx.lineWidth = 2; ctx.stroke();
     }
-  } else ellipse(fx, 16, 7, 5, '#F5B996');
+  } else ellipse(fx, 16, cold ? 10 : 7, cold ? 7 : 5, noseCol);
+  if (cold && b.pinch <= 0) ellipse(fx + 4, 25 + Math.sin(tm * 2) * 2, 3, 5, 'rgba(160,220,255,0.9)'); // sniffle
 
   // Mouth
   const my = 48, o = b.mouth.open;
   if (ev === 'raspberry') {
-    const w = Math.sin(t * 60) * 2;
+    const w = Math.sin(tm * 60) * 2;
     ellipse(fx, my + 12, 14, 12 + w, '#FF7C9C');   // tongue out
     ellipse(fx, my, 24 + w, 9, '#E0506F');          // vibrating lips
   } else if (b.chew > 0) {
-    const w = Math.sin(t * 25) * 4;
+    const w = Math.sin(tm * 25) * 4;
     ctx.beginPath(); ctx.moveTo(fx - 14, my + w * 0.3); ctx.quadraticCurveTo(fx, my + 8 - w, fx + 14, my - w * 0.3);
     ctx.strokeStyle = '#B23A57'; ctx.lineWidth = 5; ctx.stroke();
   } else if (o > 0.08) {
@@ -1446,6 +1904,7 @@ function drawHead() {
     ctx.save();
     ctx.beginPath(); ctx.ellipse(fx, cy, rx, ry, 0, 0, TAU); ctx.clip();
     ellipse(fx, cy + ry * 0.75, rx * 0.7, ry * 0.5, '#FF7C9C');
+    if (S.condition === 'teething') { ctx.fillStyle = '#fff'; ctx.fillRect(fx - 5, cy - ry, 10, 9); } // first tooth!
     ctx.restore();
     ctx.beginPath(); ctx.ellipse(fx, cy, rx, ry, 0, 0, TAU); ctx.strokeStyle = '#D9486B'; ctx.lineWidth = 3; ctx.stroke();
   } else {
@@ -1453,8 +1912,10 @@ function drawHead() {
     ctx.beginPath(); ctx.moveTo(fx - 17, my); ctx.quadraticCurveTo(fx, my + curve, fx + 17, my);
     ctx.strokeStyle = '#B23A57'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.stroke();
   }
+  // Teething drool
+  if (S.condition === 'teething' && ev !== 'raspberry') ellipse(fx + 20, my + 10 + (tm * 8 % 6), 3.5, 5, 'rgba(160,220,255,0.85)');
 
-  // Food splats stuck on the face, clipped to the head
+  // Food splats stuck on the face (and hair), clipped to the head
   if (b.faceSplats.length) {
     ctx.save();
     ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.clip();
@@ -1465,19 +1926,44 @@ function drawHead() {
 
   // "?" bubble when curious (airplane trick)
   if (b.curious > 0 && !b.crying) {
-    const bob = Math.sin(t * 6) * 5;
-    circle(b.x + 95, b.y - 120 + bob, 24, '#fff');
-    drawText('?', b.x + 95, b.y - 120 + bob, '#6EC6FF', 32, 1);
+    const bob = Math.sin(tm * 6) * 5, side = bubbleSide() * -1;
+    circle(b.x + side * 95, b.y - 120 + bob, 24, '#fff');
+    drawText('?', b.x + side * 95, b.y - 120 + bob, '#6EC6FF', 32, 1);
+  }
+}
+
+// The airplane thought bubble sits beside the head, on whichever side has room.
+function bubbleSide() { return baby.x - 190 < 60 ? 1 : -1; }
+function bubblePos() {
+  const s = bubbleSide();
+  return { x: baby.x + s * 190, y: baby.y - 150, side: s };
+}
+function drawFigureBubble() {
+  if (S.screen !== 'playing' || baby.crying) return;
+  const { x, y, side } = bubblePos();
+  const pop = 1 + Math.sin(S.figurePop * Math.PI) * 0.35;
+  ctx.globalAlpha = 0.95;
+  circle(baby.x + side * 105, baby.y - 95, 8, '#fff');
+  circle(baby.x + side * 135, baby.y - 115, 12, '#fff');
+  ellipse(x, y, 50 * pop, 44 * pop, '#fff');
+  ctx.globalAlpha = 1;
+  figurePath(S.figure, x, y + 2, 22 * pop);
+  ctx.strokeStyle = '#6EC6FF'; ctx.lineWidth = 6; ctx.lineJoin = 'round'; ctx.stroke();
+  drawText('✈', x - 34 * pop, y - 28 * pop, '#FF5C9E', 20, 1);
+  // With figure changes on, show how long until the next one
+  if (S.level >= CONFIG.figures.changeFromLevel) {
+    ctx.beginPath(); ctx.arc(x, y, 50 * pop + 5, -Math.PI / 2, -Math.PI / 2 + TAU * S.figureTimer / CONFIG.figures.changeEvery);
+    ctx.strokeStyle = 'rgba(110,198,255,0.6)'; ctx.lineWidth = 4; ctx.stroke();
   }
 }
 
 function drawSpoon() {
-  if (!['playing', 'levelEnding', 'crying'].includes(S.screen)) return;
+  if (!inGameScreen()) return;
   const f = food();
   const speedRatio = clamp(spoon.speed / spillSpeed(), 0, 1);
 
-  // Motion trail (helps with the airplane swoosh)
-  if (spoon.loaded && spoon.trail.length > 2) {
+  // Motion trail (helps with drawing airplane figures)
+  if (spoon.loaded && !S.grab && spoon.trail.length > 2) {
     ctx.beginPath();
     spoon.trail.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
     ctx.strokeStyle = 'rgba(110,198,255,0.35)'; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
@@ -1487,7 +1973,7 @@ function drawSpoon() {
   ctx.translate(spoon.x, spoon.y);
   const s = 1 - Math.sin(spoon.jab * Math.PI) * 0.18; // quick "push" when delivering
   ctx.scale(s, s);
-  const tilt = clamp(spoon.svx / 3000, -0.3, 0.3);
+  const tilt = S.grab ? Math.sin(S.time * 30) * 0.15 : clamp(spoon.svx / 3000, -0.3, 0.3);
   ctx.rotate(0.8 + tilt);
   // Handle points down-right from the spoon bowl at the origin
   rrect(14, -7, CONFIG.spoon.length, 14, 7); ctx.fillStyle = '#FF5C9E'; ctx.fill();
@@ -1495,7 +1981,7 @@ function drawSpoon() {
   ellipse(0, 0, 28, 18, '#E6E6F0');
   ellipse(-3, -3, 20, 12, '#C8C8D8');
   if (spoon.loaded) {
-    // Food wobbles more the faster you go
+    // Food wobbles more the faster you go (and more for runny food)
     const w = Math.sin(S.time * 45) * speedRatio * speedRatio * 6 * (1.6 - f.viscosity);
     if (isRunny(f)) {        // soup: a flat, glossy pool that sloshes
       ellipse(-3 + w, -3, 22, 13, f.color);
@@ -1514,6 +2000,17 @@ function drawSpoon() {
     line(spoon.x + 30, spoon.y - 30, spoon.x + 38, spoon.y - 38, '#FF5A5A', 4);
     ctx.globalAlpha = 1;
   }
+
+  // Tug-of-war: baby's fist on the handle and the power bar
+  if (S.grab) {
+    const hx = spoon.x + Math.cos(0.8) * 45, hy = spoon.y + Math.sin(0.8) * 45;
+    circle(hx, hy, 21, '#FFD2AE');
+    const w = 170, x = spoon.x - w / 2, y = spoon.y - 95, p = S.grab.power;
+    rrect(x - 4, y - 4, w + 8, 26, 13); ctx.fillStyle = '#fff'; ctx.fill();
+    rrect(x, y, w, 18, 9); ctx.fillStyle = '#FFD6E6'; ctx.fill();
+    rrect(x, y, Math.max(18, w * p), 18, 9); ctx.fillStyle = p > 0.5 ? '#4CC38A' : '#FF8A3C'; ctx.fill();
+    drawText(t(pointer.touch ? 'mashTouch' : 'mashKey'), spoon.x, y - 22, '#E8488A', 24, 0.6 + Math.sin(S.time * 20) * 0.4);
+  }
 }
 
 function drawParticles() {
@@ -1522,21 +2019,14 @@ function drawParticles() {
     ctx.globalAlpha = p.type === 'food' ? 1 : a;
     if (p.type === 'star') drawStar(p.x, p.y, p.size, p.rot, p.color);
     else if (p.type === 'heart') drawHeart(p.x, p.y, p.size, p.color);
-    else if (p.type === 'confetti') {
+    else if (p.type === 'bubble') {
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, TAU);
+      ctx.strokeStyle = p.color; ctx.lineWidth = 2.5; ctx.stroke();
+    } else if (p.type === 'confetti') {
       ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
       ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2); ctx.restore();
     } else circle(p.x, p.y, p.size, p.color);
   }
-  ctx.globalAlpha = 1;
-}
-
-function drawText(text, x, y, color, size, alpha) {
-  ctx.globalAlpha = alpha;
-  ctx.font = `bold ${size}px "Trebuchet MS", "Segoe UI", sans-serif`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.lineWidth = size * 0.18; ctx.strokeStyle = '#fff'; ctx.lineJoin = 'round';
-  ctx.strokeText(text, x, y);
-  ctx.fillStyle = color; ctx.fillText(text, x, y);
   ctx.globalAlpha = 1;
 }
 
@@ -1551,13 +2041,33 @@ function draw() {
   drawBowl();
   drawChairAndBody();
   drawHead();
+  drawFigureBubble();
   drawParticles();
   drawSpoon();
-  for (const t of floatTexts) {
-    const pop = 1 + Math.max(0, (t.life - t.max + 0.15) / 0.15) * 0.4; // pops in big, then settles
-    drawText(t.text, t.x, t.y, t.color, t.size * pop, clamp(t.life / t.max * 2.5, 0, 1));
+  for (const tx of floatTexts) {
+    const pop = 1 + Math.max(0, (tx.life - tx.max + 0.15) / 0.15) * 0.4; // pops in big, then settles
+    drawText(tx.text, tx.x, tx.y, tx.color, tx.size * pop, clamp(tx.life / tx.max * 2.5, 0, 1));
   }
   for (const s of screenSplats) drawSplat(s, s.x, s.y, 1, clamp(s.life / s.max * 2, 0, 0.9));
+}
+
+/* =====================================================================
+   Language
+   ===================================================================== */
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.title = t('title');
+  document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+  document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+  $('langBtn').textContent = LANG === 'fr' ? 'EN' : 'FR';   // shows the language you'd switch to
+  for (const k in hudCache) delete hudCache[k];
+  if (S.screen === 'levelDone') fillLevelScreen();
+  if (S.screen === 'over') fillGameOver();
+}
+// Manual switch for this visit only; a reload goes back to the browser's locale.
+function toggleLang() {
+  LANG = LANG === 'fr' ? 'en' : 'fr';
+  applyLang();
 }
 
 /* =====================================================================
@@ -1569,49 +2079,40 @@ function setPointer(e) {
 }
 const onBowl = () => dist(pointer.x, pointer.y, bowl.x, bowl.y) < bowl.r;
 
-// Track active touches so a two-finger tap can pinch the nose.
-const touches = new Set();
-let multiTouch = false;   // true until all fingers lift after a two-finger gesture
-
 canvas.addEventListener('pointerdown', e => {
   Sound.init();
-  if (e.pointerType !== 'mouse') {
-    touches.add(e.pointerId);
-    if (touches.size >= 2) { multiTouch = true; tryPinch(true); return; }
-  }
   pointer.touch = e.pointerType !== 'mouse';
   pointer.down = true;
   setPointer(e);
+  Object.assign(press, { x: pointer.x, y: pointer.y, t: performance.now(), mash: false });
   if (pointer.touch) spoon.teleport = true; // finger jumped here: don't count it as speed
+  if (S.grab) { press.mash = true; mashGrab(); return; }
   if (onBowl()) { reload(); return; }
   if (!pointer.touch) deliver(); // mouse: click delivers; touch: lifting the finger delivers
 });
 canvas.addEventListener('pointermove', e => {
-  if (e.pointerType !== 'mouse' && (!pointer.down || multiTouch || touches.size > 1)) return;
+  if (e.pointerType !== 'mouse' && !pointer.down) return;
   pointer.touch = e.pointerType !== 'mouse';
   setPointer(e);
 });
 canvas.addEventListener('pointerup', e => {
-  touches.delete(e.pointerId);
-  if (multiTouch) { if (touches.size === 0) { multiTouch = false; pointer.down = false; } return; }
   if (!pointer.down) return;
   pointer.down = false;
-  if (e.pointerType !== 'mouse' && !onBowl()) deliver();
+  if (e.pointerType === 'mouse' || press.mash || S.grab) return;
+  // A quick tap on the tummy is a pat; otherwise lifting the finger feeds.
+  const tap = performance.now() - press.t < 300 && dist(pointer.x, pointer.y, press.x, press.y) < 20;
+  if (tap && S.screen === 'playing' && onTummy(pointer.x, pointer.y)) return pat(pointer.x, pointer.y);
+  if (!onBowl()) deliver();
 });
-canvas.addEventListener('pointercancel', e => {
-  touches.delete(e.pointerId);
-  if (touches.size === 0) { pointer.down = false; multiTouch = false; }
-});
+canvas.addEventListener('pointercancel', () => { pointer.down = false; });
 canvas.addEventListener('pointerenter', e => { setPointer(e); spoon.teleport = true; });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
 
-const keysDown = new Set();
-window.addEventListener('keyup', e => keysDown.delete(e.code));
-window.addEventListener('blur', () => keysDown.clear());
 window.addEventListener('keydown', e => {
-  keysDown.add(e.code);
-  if (!e.repeat && CONFIG.pinch.keys.includes(e.code) && CONFIG.pinch.keys.every(k => keysDown.has(k))) tryPinch(false);
-  if (e.code === 'Space') { e.preventDefault(); Sound.init(); funnyFace(); }
+  if (e.code === 'Space') e.preventDefault();
+  if (e.repeat) return;
+  if (S.grab) { mashGrab(); return; }   // any key helps win the tug-of-war
+  if (e.code === 'Space') { Sound.init(); onFunnyTap(); }
   if (e.code === 'KeyM') toggleMute();
   if (e.code === 'Enter') {
     const btn = { start: 'startBtn', levelDone: 'nextBtn', over: 'againBtn' }[S.screen];
@@ -1624,8 +2125,9 @@ function toggleMute() {
   $('muteBtn').textContent = Sound.muted ? '🔇' : '🔊';
 }
 
-$('funnyBtn').addEventListener('click', () => { Sound.init(); funnyFace(); });
+$('funnyBtn').addEventListener('click', () => { Sound.init(); onFunnyTap(); });
 $('muteBtn').addEventListener('click', toggleMute);
+$('langBtn').addEventListener('click', toggleLang);
 $('startBtn').addEventListener('click', () => { Sound.init(); Sound.play('click'); startGame(); });
 $('nextBtn').addEventListener('click', () => { Sound.play('click'); S.level++; startLevel(); });
 $('againBtn').addEventListener('click', () => { Sound.play('click'); startGame(); });
@@ -1635,6 +2137,7 @@ window.addEventListener('resize', resize);
 /* =====================================================================
    Main loop
    ===================================================================== */
+applyLang();
 resize();
 pointer.x = view.W * 0.72; pointer.y = view.H * 0.72;
 let lastTime = performance.now();
