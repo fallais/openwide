@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Open Wide!</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%; overflow: hidden; background: #FFF1D0;
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent; touch-action: none;
+  }
+  canvas { position: fixed; inset: 0; display: block; touch-action: none; cursor: none; }
+
+  /* ---------- HUD ---------- */
+  #hud {
+    position: fixed; top: 0; left: 0; right: 0;
+    display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: flex-start;
+    padding: max(10px, env(safe-area-inset-top)) 12px 0; pointer-events: none;
+    font-size: clamp(13px, 2.2vw, 18px);
+  }
+  .group { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .pill {
+    background: rgba(255,255,255,.9); border-radius: 999px; padding: 5px 12px;
+    box-shadow: 0 3px 0 rgba(90,50,120,.15); color: #5B3A78; font-weight: bold; white-space: nowrap;
+  }
+  .pill b { color: #E8488A; }
+  #hudCombo { background: #FFD84D; color: #7A4A00; transform-origin: center; transition: transform .1s; }
+  .meters { display: flex; flex-direction: column; gap: 5px; min-width: 150px; }
+  .meter { display: flex; align-items: center; gap: 6px; background: rgba(255,255,255,.9);
+    border-radius: 999px; padding: 4px 10px 4px 8px; box-shadow: 0 3px 0 rgba(90,50,120,.15);
+    color: #5B3A78; font-weight: bold; font-size: .85em; }
+  .meter .label { width: 4.8em; white-space: nowrap; }
+  .bar { flex: 1; height: 12px; min-width: 70px; background: #EFE3F5; border-radius: 999px; overflow: hidden; }
+  .fill { height: 100%; width: 50%; border-radius: 999px; transition: width .15s, background-color .3s; }
+  #messFill { background: #A0703C; }
+
+  /* ---------- Buttons ---------- */
+  #funnyBtn, #muteBtn {
+    position: fixed; border: none; border-radius: 50%; cursor: pointer; font-family: inherit;
+    box-shadow: 0 5px 0 rgba(90,50,120,.25); touch-action: manipulation;
+  }
+  #funnyBtn {
+    right: 16px; bottom: max(16px, env(safe-area-inset-bottom)); width: 92px; height: 92px;
+    background: conic-gradient(rgba(90,50,120,.45) calc(var(--cd, 0) * 360deg), #FFD84D 0);
+    font-size: 38px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  #funnyBtn small { font-size: 11px; font-weight: bold; color: #5B3A78; margin-top: 2px; }
+  #funnyBtn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(90,50,120,.25); }
+  #muteBtn { right: 120px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px;
+    background: #fff; font-size: 22px; }
+
+  /* ---------- Overlay screens ---------- */
+  .screen {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 228, 240, .55); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+    padding: 16px; cursor: default;
+  }
+  .card {
+    background: #fff; border-radius: 28px; padding: 26px 28px; max-width: 440px; width: 100%;
+    text-align: center; color: #5B3A78; box-shadow: 0 10px 0 rgba(90,50,120,.18), 0 20px 50px rgba(0,0,0,.15);
+    animation: pop .35s cubic-bezier(.2,1.6,.4,1);
+  }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .card h1 { font-size: clamp(38px, 9vw, 56px); color: #FF5C9E; text-shadow: 3px 3px 0 #FFD84D; letter-spacing: 1px; }
+  .card h2 { font-size: 30px; color: #FF5C9E; margin-bottom: 10px; }
+  .card p { margin: 8px 0; line-height: 1.4; }
+  .card ul { text-align: left; margin: 12px 0 16px 18px; line-height: 1.5; font-size: 15px; }
+  .stats { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 14px 0 18px; text-align: left; font-size: 17px; }
+  .stats b { color: #E8488A; text-align: right; }
+  .big-btn {
+    background: #4CC38A; color: #fff; border: none; border-radius: 999px; padding: 14px 32px;
+    font-size: 22px; font-weight: bold; font-family: inherit; cursor: pointer;
+    box-shadow: 0 6px 0 #2E8F60; touch-action: manipulation;
+  }
+  .big-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #2E8F60; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<canvas id="game"></canvas>
+
+<!-- Heads-up display (updated every frame from game state) -->
+<div id="hud" class="hidden">
+  <div class="group">
+    <div class="pill">Level <b id="hudLevel">1</b></div>
+    <div class="pill">Bites <b id="hudBites">0/10</b></div>
+  </div>
+  <div class="group">
+    <div class="pill">Score <b id="hudScore">0</b></div>
+    <div class="pill hidden" id="hudCombo">x1</div>
+  </div>
+  <div class="meters">
+    <div class="meter"><span class="label">Mood <span id="moodFace">😊</span></span><div class="bar"><div class="fill" id="moodFill"></div></div></div>
+    <div class="meter"><span class="label">Mess</span><div class="bar"><div class="fill" id="messFill"></div></div></div>
+  </div>
+</div>
+
+<button id="funnyBtn" class="hidden" aria-label="Funny face">😜<small>SPACE</small></button>
+<button id="muteBtn" class="hidden" aria-label="Toggle sound">🔊</button>
+
+<div id="screenStart" class="screen">
+  <div class="card">
+    <h1>Open Wide!</h1>
+    <p>Feed the baby. The baby isn't making it easy.</p>
+    <ul>
+      <li><b>Move</b> the spoon with the mouse (drag with your finger on mobile).</li>
+      <li><b>Click</b> (or lift your finger) to feed. Only works when the mouth is open!</li>
+      <li>Refill the spoon at the <b>bowl</b>. Move too fast and the food falls off.</li>
+      <li>Loop the spoon around like an <b>airplane</b> ✈ to make baby curious.</li>
+      <li>Press <b>SPACE</b> or 😜 to pull a funny face and make baby laugh.</li>
+    </ul>
+    <button class="big-btn" id="startBtn">Start feeding!</button>
+  </div>
+</div>
+
+<div id="screenLevel" class="screen hidden">
+  <div class="card">
+    <h2 id="lvlTitle">Level 1 complete!</h2>
+    <div class="stats">
+      <span>Bites</span><b id="lvlBites">10</b>
+      <span>Misses</span><b id="lvlMisses">0</b>
+      <span>Mess rating</span><b id="lvlMess">Spotless</b>
+      <span>Clean bonus</span><b id="lvlBonus">+0</b>
+      <span>Total score</span><b id="lvlScore">0</b>
+    </div>
+    <button class="big-btn" id="nextBtn">Next level ▶</button>
+  </div>
+</div>
+
+<div id="screenOver" class="screen hidden">
+  <div class="card">
+    <h2>Waaaah! Game over</h2>
+    <p>Baby has had enough.</p>
+    <div class="stats">
+      <span>Score</span><b id="overScore">0</b>
+      <span>Level reached</span><b id="overLevel">1</b>
+      <span>Total bites</span><b id="overBites">0</b>
+      <span>Mess rating</span><b id="overMess">Spotless</b>
+      <span>Best score</span><b id="overBest">0</b>
+    </div>
+    <button class="big-btn" id="againBtn">Play again</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* =====================================================================
+   CONFIG: tweak these to tune the game.
+   Distances are in "world units": the world is always 800 units tall
+   and is scaled to fit the window.
+   ===================================================================== */
+const CONFIG = {
+  world: {
+    height: 800,
+    minWidth: 600,          // world width follows the window aspect ratio, clamped to this range
+    maxWidth: 1400,
+    floorY: 640,            // y where the wall meets the floor
+  },
+
+  level: {
+    bitesToWin: 10,         // successful bites needed to clear a level
+    cleanBonusPerPoint: 10, // end-of-level bonus = (100 - mess) * this
+  },
+
+  score: {
+    bite: 100,              // base points per bite
+    comboStep: 0.5,         // multiplier gained per consecutive clean bite
+    maxMultiplier: 5,
+  },
+
+  baby: {
+    headRadius: 110,
+    restY: 360,             // resting head height
+    rangeX: 170,            // how far the head can drift from its rest position
+    rangeY: 70,
+    baseSpeed: 110,         // head drift speed at level 1 (units/sec)
+    speedPerLevel: 0.2,     // +20% drift speed per level
+    moveIntervalMin: 0.7,   // seconds between new drift targets
+    moveIntervalMax: 1.8,
+    pauseChance: 0.3,       // chance a new drift target is just "hold still"
+    dodgeRadius: 170,       // a loaded spoon this close to a closed mouth can trigger a dodge
+    dodgeChancePerSec: 0.9,
+    dodgePerLevel: 0.25,    // +25% dodge chance per level
+    dodgeSpeedMult: 3.5,    // how much faster the head moves while dodging
+    dodgeDuration: 0.35,
+  },
+
+  mouth: {
+    closedMin: 1.2,         // seconds the mouth stays shut (random between min and max)
+    closedMax: 3.0,
+    openMin: 0.9,           // seconds the mouth stays open
+    openMax: 1.6,
+    minOpen: 0.45,          // open time never drops below this, however hard it gets
+    timingPerLevel: 0.08,   // per level: closed 8% longer, open 8% shorter
+    openSpeed: 6,           // animation speeds (higher = snappier)
+    closeSpeed: 9,
+    snapSpeed: 24,          // closing speed after a fake-out
+    fakeOutChance: 0.2,     // chance an opening is a fake-out
+    fakeOutPerLevel: 0.05,
+    fakeOutMax: 0.55,
+    fakeOutPeak: 0.45,      // how far it opens before snapping shut
+    fakeOutTime: 0.35,
+    biteThreshold: 0.55,    // mouth must be at least this open (0..1) to accept food
+    hitRadius: 44,          // spoon must be this close to the mouth centre
+  },
+
+  mood: {
+    start: 70,
+    max: 100,
+    biteGain: 9,
+    missPenalty: 14,
+    dropPenalty: 5,
+    bouncePenalty: 8,
+    decayPerSec: 0.7,       // babies get impatient
+    lowMoodEffect: 0.6,     // at 0 mood the baby is 60% faster and trickier
+  },
+
+  mess: { splat: 8, drop: 5, bounce: 6, sneeze: 12, max: 100 },
+
+  spoon: {
+    maxSpeed: 2300,         // move faster than this (units/sec) and the food falls off
+    speedSmoothing: 0.07,   // seconds; smooths out jittery mouse readings
+    touchOffsetY: 70,       // on touch, the spoon sits above your finger so you can see it
+    length: 140,
+  },
+
+  airplane: {
+    window: 1.6,            // seconds in which the loop must be completed
+    loopAngle: Math.PI * 2 * 0.85, // total turning needed (~a full circle)
+    minStep: 10,            // ignore tiny movements when measuring the loop
+    curiousTime: 3.0,       // how long the baby stays curious
+    openMultiplier: 2.2,    // curious baby keeps the mouth open this much longer
+    cooldown: 1.0,
+  },
+
+  funnyFace: { cooldown: 7, laughTime: 1.3 },
+
+  events: {
+    firstDelay: 6,          // seconds before the first random event in a level
+    gapMin: 5,
+    gapMax: 11,
+    gapShrinkPerLevel: 0.1,
+    minGap: 2.5,
+    weights: { sneeze: 1, lookAway: 1.4, raspberry: 1 },
+    sneezeWindup: 0.9,
+    sneezeBurst: 0.5,
+    lookAwayMin: 1.4,
+    lookAwayMax: 2.4,
+    raspberryTime: 1.5,
+  },
+
+  fx: { shakeSneeze: 18, shakeSplat: 5, maxFaceSplats: 14, maxFloorSplats: 70 },
+};
+
+// Food changes each level (color only, it's all mush).
+const FOODS = [
+  { name: 'Carrot mash', color: '#FF9A3C', light: '#FFC27A' },
+  { name: 'Green peas',  color: '#7BC043', light: '#A8DD76' },
+  { name: 'Beetroot',    color: '#C2185B', light: '#E86A9A' },
+  { name: 'Banana',      color: '#F2C530', light: '#FFE98A' },
+  { name: 'Blueberry',   color: '#5C6BC0', light: '#98A4F0' },
+];
+
+/* =====================================================================
+   Utilities
+   ===================================================================== */
+const rand  = (a, b) => a + Math.random() * (b - a);
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp  = (a, b, t) => a + (b - a) * t;
+const dist  = (x1, y1, x2, y2) => Math.hypot(x2 - x1, y2 - y1);
+const TAU = Math.PI * 2;
+const $ = id => document.getElementById(id);
+
+/* =====================================================================
+   Sound: tiny synth built on the Web Audio API
+   ===================================================================== */
+const Sound = {
+  ctx: null, master: null, noiseBuf: null, muted: false,
+
+  // Must run from a user gesture (browsers block audio until then).
+  init() {
+    if (this.ctx) { if (this.ctx.state === 'suspended') this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    this.ctx = new AC();
+    this.master = this.ctx.createGain();
+    this.master.gain.value = 0.5;
+    this.master.connect(this.ctx.destination);
+    // One second of white noise, reused for splats and sneezes.
+    const len = this.ctx.sampleRate;
+    this.noiseBuf = this.ctx.createBuffer(1, len, len);
+    const data = this.noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+  },
+
+  tone(freq, dur, o = {}) {
+    const c = this.ctx, t = c.currentTime + (o.delay || 0);
+    const osc = c.createOscillator(), g = c.createGain();
+    osc.type = o.type || 'sine';
+    osc.frequency.setValueAtTime(freq, t);
+    if (o.slide) osc.frequency.exponentialRampToValueAtTime(o.slide, t + dur);
+    const v = o.vol ?? 0.2;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    osc.connect(g).connect(this.master);
+    osc.start(t); osc.stop(t + dur + 0.05);
+  },
+
+  noise(dur, o = {}) {
+    const c = this.ctx, t = c.currentTime + (o.delay || 0);
+    const src = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    src.buffer = this.noiseBuf;
+    f.type = o.type || 'lowpass';
+    f.frequency.setValueAtTime(o.filter || 1000, t);
+    if (o.sweepTo) f.frequency.exponentialRampToValueAtTime(o.sweepTo, t + dur);
+    f.Q.value = o.q || 1;
+    const v = o.vol ?? 0.3;
+    g.gain.setValueAtTime(v, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f).connect(g).connect(this.master);
+    src.start(t); src.stop(t + dur + 0.05);
+  },
+
+  // Buzzy lip-flapping sound: a sawtooth whose volume is wobbled by a fast LFO.
+  raspberry(dur) {
+    const c = this.ctx, t = c.currentTime;
+    const osc = c.createOscillator(), lfo = c.createOscillator();
+    const lfoGain = c.createGain(), wobble = c.createGain(), env = c.createGain(), f = c.createBiquadFilter();
+    osc.type = 'sawtooth'; osc.frequency.value = 85;
+    lfo.type = 'square'; lfo.frequency.value = 26;
+    lfoGain.gain.value = 0.5; wobble.gain.value = 0.5;
+    f.type = 'lowpass'; f.frequency.value = 900;
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(0.35, t + 0.05);
+    env.gain.setValueAtTime(0.35, t + dur - 0.15);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    lfo.connect(lfoGain).connect(wobble.gain);
+    osc.connect(f).connect(wobble).connect(env).connect(this.master);
+    osc.start(t); lfo.start(t); osc.stop(t + dur + 0.05); lfo.stop(t + dur + 0.05);
+  },
+
+  play(name, arg = 0) {
+    if (!this.ctx || this.muted) return;
+    switch (name) {
+      case 'nom': {
+        const p = 1 + Math.min(arg, 10) * 0.06; // pitch rises with combo
+        this.tone(520 * p, 0.09, { type: 'square', vol: 0.1, slide: 380 * p });
+        this.tone(440 * p, 0.1, { type: 'square', vol: 0.09, slide: 300 * p, delay: 0.11 });
+        this.tone(880 * p, 0.18, { type: 'triangle', vol: 0.12, delay: 0.2 });
+        break;
+      }
+      case 'splat':
+        this.noise(0.25, { vol: 0.5, filter: 1200, sweepTo: 200 });
+        this.tone(170, 0.15, { vol: 0.3, slide: 60 });
+        break;
+      case 'plop':
+        this.noise(0.1, { vol: 0.2, filter: 700 });
+        this.tone(130, 0.1, { vol: 0.2, slide: 50 });
+        break;
+      case 'whoops':
+        this.tone(750, 0.3, { type: 'triangle', vol: 0.15, slide: 220 });
+        break;
+      case 'scoop':
+        this.noise(0.12, { vol: 0.25, filter: 2500, type: 'bandpass' });
+        this.tone(300, 0.14, { vol: 0.15, slide: 700, delay: 0.05 });
+        break;
+      case 'airplane':
+        this.tone(220, 0.7, { type: 'sawtooth', vol: 0.06, slide: 900 });
+        this.tone(226, 0.7, { type: 'sawtooth', vol: 0.05, slide: 940 });
+        break;
+      case 'laugh':
+        for (let i = 0; i < 5; i++)
+          this.tone(700 - i * 35, 0.09, { type: 'triangle', vol: 0.18, slide: 560 - i * 35, delay: i * 0.12 });
+        break;
+      case 'ah':
+        this.tone(300, 0.85, { type: 'triangle', vol: 0.12, slide: 620 });
+        break;
+      case 'choo':
+        this.noise(0.45, { vol: 0.8, filter: 3500, type: 'bandpass', q: 0.7, sweepTo: 700 });
+        this.tone(220, 0.2, { type: 'square', vol: 0.1, slide: 90 });
+        break;
+      case 'raspberry': this.raspberry(arg || 1.2); break;
+      case 'cry':
+        [0, 0.6, 1.2].forEach(d => this.tone(640, 0.55, { type: 'triangle', vol: 0.16, slide: 380, delay: d }));
+        break;
+      case 'levelup':
+        [523, 659, 784, 1047].forEach((f, i) => this.tone(f, 0.2, { type: 'square', vol: 0.09, delay: i * 0.1 }));
+        break;
+      case 'fake': this.tone(360, 0.08, { type: 'square', vol: 0.06, slide: 200 }); break;
+      case 'dodge': this.noise(0.18, { vol: 0.12, filter: 1400, type: 'bandpass', sweepTo: 500 }); break;
+      case 'empty': this.tone(200, 0.08, { type: 'square', vol: 0.07 }); break;
+      case 'click': this.tone(660, 0.06, { type: 'triangle', vol: 0.1 }); break;
+    }
+  },
+};
+
+/* =====================================================================
+   Canvas and view scaling
+   ===================================================================== */
+const canvas = $('game');
+const ctx = canvas.getContext('2d');
+const view = { W: 1000, H: 800, scale: 1, ox: 0, oy: 0, dpr: 1, cw: 0, ch: 0 };
+
+function resize() {
+  view.dpr = Math.min(window.devicePixelRatio || 1, 2);
+  view.cw = window.innerWidth;
+  view.ch = window.innerHeight;
+  canvas.width = Math.round(view.cw * view.dpr);
+  canvas.height = Math.round(view.ch * view.dpr);
+  canvas.style.width = view.cw + 'px';
+  canvas.style.height = view.ch + 'px';
+  view.H = CONFIG.world.height;
+  view.W = clamp(view.cw / view.ch * view.H, CONFIG.world.minWidth, CONFIG.world.maxWidth);
+  view.scale = Math.min(view.cw / view.W, view.ch / view.H);
+  view.ox = (view.cw - view.W * view.scale) / 2;
+  view.oy = (view.ch - view.H * view.scale) / 2;
+  layout();
+}
+
+// Place scene elements relative to the current world width.
+function layout() {
+  const shift = view.W / 2 - baby.restX;
+  baby.restX += shift; baby.x += shift; baby.tx += shift;
+  bowl.x = 95;
+  bowl.y = CONFIG.world.floorY + 70;
+}
+
+function toWorld(clientX, clientY) {
+  return { x: (clientX - view.ox) / view.scale, y: (clientY - view.oy) / view.scale };
+}
+
+/* =====================================================================
+   Game state
+   ===================================================================== */
+const S = {
+  screen: 'start',     // start | playing | levelEnding | levelDone | crying | over
+  level: 1, score: 0, combo: 0, bites: 0,
+  mood: CONFIG.mood.start, mess: 0,
+  levelMisses: 0, totalBites: 0, messHistory: [],
+  funnyCd: 0, eventTimer: 0, pendingTimer: 0,
+  shake: 0, time: 0, best: 0,
+};
+
+const baby = {
+  x: 500, y: CONFIG.baby.restY, vx: 0, vy: 0,
+  tx: 500, ty: CONFIG.baby.restY,
+  restX: 500, restY: CONFIG.baby.restY,
+  moveTimer: 0, dodge: 0, turn: 0, turnTarget: 0,
+  mouth: { open: 0, state: 'closed', timer: 1.5, snap: false, nextLong: false },
+  event: null,          // { type: 'sneeze'|'lookAway'|'raspberry', t, dur, ... }
+  chew: 0, laugh: 0, grumpy: 0, curious: 0, bounce: 0,
+  crying: false, tearTimer: 0,
+  blink: 0, blinkTimer: 2,
+  faceSplats: [],       // stored relative to the head centre so they move with it
+};
+
+const spoon = {
+  x: 0, y: 0, svx: 0, svy: 0, speed: 0,
+  loaded: true, jab: 0, teleport: true,
+  trail: [],
+  // airplane-loop detection
+  turnHist: [], lastSample: null, planeCd: 0,
+};
+
+const pointer = { x: 700, y: 600, touch: false, down: false };
+const bowl = { x: 95, y: 710, r: 75 };
+
+let particles = [];
+let floatTexts = [];
+let floorSplats = [];
+let screenSplats = [];
+
+const food = () => FOODS[(S.level - 1) % FOODS.length];
+
+/* =====================================================================
+   Difficulty helpers: level and mood both make the baby harder
+   ===================================================================== */
+const lvl = () => S.level - 1;
+// 1 at full mood, up to 1 + lowMoodEffect at zero mood
+const moodStress = () => 1 + (1 - S.mood / CONFIG.mood.max) * CONFIG.mood.lowMoodEffect;
+
+function closedDuration() {
+  const c = CONFIG.mouth;
+  return rand(c.closedMin, c.closedMax) * (1 + lvl() * c.timingPerLevel) * moodStress();
+}
+function openDuration() {
+  const c = CONFIG.mouth;
+  return Math.max(c.minOpen, rand(c.openMin, c.openMax) / ((1 + lvl() * c.timingPerLevel) * moodStress()));
+}
+function fakeOutChance() {
+  const c = CONFIG.mouth;
+  return Math.min(c.fakeOutMax, c.fakeOutChance + lvl() * c.fakeOutPerLevel + (moodStress() - 1) * 0.3);
+}
+function babySpeed() {
+  const c = CONFIG.baby;
+  return c.baseSpeed * (1 + lvl() * c.speedPerLevel) * moodStress();
+}
+function nextEventGap() {
+  const e = CONFIG.events;
+  return Math.max(e.minGap, rand(e.gapMin, e.gapMax) / (1 + lvl() * e.gapShrinkPerLevel));
+}
+
+// Mouth centre in world coordinates (shifts sideways when the head turns).
+function mouthPos() {
+  return { x: baby.x + baby.turn * CONFIG.baby.headRadius * 0.45, y: baby.y + 48 };
+}
+
+/* =====================================================================
+   Game flow
+   ===================================================================== */
+function startGame() {
+  S.level = 1; S.score = 0; S.totalBites = 0; S.messHistory = [];
+  S.mood = CONFIG.mood.start;
+  startLevel();
+}
+
+function startLevel() {
+  S.bites = 0; S.mess = 0; S.combo = 0; S.levelMisses = 0;
+  S.mood = CONFIG.mood.start;
+  S.funnyCd = 0;
+  S.eventTimer = CONFIG.events.firstDelay;
+  floorSplats = []; screenSplats = []; particles = []; floatTexts = [];
+  resetBaby();
+  spoon.loaded = true; spoon.teleport = true;
+  S.screen = 'playing';
+  showScreen(null);
+  addText(view.W / 2, 190, `Level ${S.level}`, '#FF5C9E', 60, 1.8);
+  addText(view.W / 2, 245, food().name + '!', food().color, 34, 1.8);
+}
+
+function resetBaby() {
+  Object.assign(baby, {
+    x: baby.restX, y: baby.restY, vx: 0, vy: 0, tx: baby.restX, ty: baby.restY,
+    moveTimer: 1, dodge: 0, turn: 0, turnTarget: 0, event: null,
+    chew: 0, laugh: 0, grumpy: 0, curious: 0, bounce: 0, crying: false, faceSplats: [],
+  });
+  Object.assign(baby.mouth, { open: 0, state: 'closed', timer: 1.2, snap: false, nextLong: false });
+}
+
+function startLevelEnding() {
+  S.screen = 'levelEnding';
+  S.pendingTimer = 1.3;
+  Sound.play('levelup');
+  addText(view.W / 2, 200, 'All gone!', '#4CC38A', 56, 1.4);
+  for (let i = 0; i < 60; i++) {
+    particles.push({
+      type: 'confetti', x: rand(0, view.W), y: rand(-80, 0), vx: rand(-60, 60), vy: rand(100, 300),
+      g: 150, life: 2.5, max: 2.5, size: rand(6, 11), rot: rand(0, TAU), vr: rand(-8, 8),
+      color: ['#FF5C9E', '#FFD84D', '#4CC38A', '#6EC6FF', '#B57BFF'][i % 5],
+    });
+  }
+}
+
+function showLevelScreen() {
+  const bonus = Math.round((CONFIG.mess.max - S.mess) * CONFIG.level.cleanBonusPerPoint);
+  S.score += bonus;
+  S.messHistory.push(S.mess);
+  $('lvlTitle').textContent = `Level ${S.level} complete!`;
+  $('lvlBites').textContent = S.bites;
+  $('lvlMisses').textContent = S.levelMisses;
+  $('lvlMess').textContent = messRating(S.mess);
+  $('lvlBonus').textContent = '+' + bonus;
+  $('lvlScore').textContent = S.score;
+  S.screen = 'levelDone';
+  showScreen('screenLevel');
+}
+
+function startCrying() {
+  S.screen = 'crying';
+  S.pendingTimer = 2.6;
+  baby.crying = true;
+  baby.event = null; baby.turnTarget = 0; baby.laugh = 0; baby.chew = 0;
+  Sound.play('cry');
+  addText(view.W / 2, 170, 'WAAAAH!', '#6EC6FF', 60, 2);
+}
+
+function showGameOver() {
+  S.messHistory.push(S.mess);
+  const avgMess = S.messHistory.reduce((a, b) => a + b, 0) / S.messHistory.length;
+  try { S.best = Math.max(S.score, +localStorage.getItem('openWideBest') || 0); localStorage.setItem('openWideBest', S.best); }
+  catch (e) { S.best = Math.max(S.best, S.score); }
+  $('overScore').textContent = S.score;
+  $('overLevel').textContent = S.level;
+  $('overBites').textContent = S.totalBites;
+  $('overMess').textContent = messRating(avgMess);
+  $('overBest').textContent = S.best;
+  S.screen = 'over';
+  showScreen('screenOver');
+}
+
+function messRating(m) {
+  if (m < 10) return 'Spotless ✨';
+  if (m < 30) return 'Pretty tidy';
+  if (m < 55) return 'Messy';
+  if (m < 80) return 'Disaster zone';
+  return 'Food apocalypse!';
+}
+
+function showScreen(id) {
+  for (const s of ['screenStart', 'screenLevel', 'screenOver']) $(s).classList.toggle('hidden', s !== id);
+  const inGame = id === null;
+  $('hud').classList.toggle('hidden', !inGame);
+  $('funnyBtn').classList.toggle('hidden', !inGame);
+  $('muteBtn').classList.toggle('hidden', !inGame);
+}
+
+function addMood(v) {
+  S.mood = clamp(S.mood + v, 0, CONFIG.mood.max);
+  if (S.mood <= 0 && S.screen === 'playing') startCrying();
+}
+function addMess(v) { S.mess = clamp(S.mess + v, 0, CONFIG.mess.max); }
+
+/* =====================================================================
+   Player actions
+   ===================================================================== */
+
+// Click / tap release: try to put the spoon in the mouth.
+function deliver() {
+  if (S.screen !== 'playing') return;
+  spoon.jab = 1;
+  if (!spoon.loaded) {
+    Sound.play('empty');
+    addText(spoon.x, spoon.y - 40, 'Empty spoon!', '#8a6aa0', 22, 0.8);
+    return;
+  }
+  const b = baby, R = CONFIG.baby.headRadius, m = mouthPos();
+  const onMouth = dist(spoon.x, spoon.y, m.x, m.y) < CONFIG.mouth.hitRadius;
+  const onHead = dist(spoon.x, spoon.y, b.x, b.y) < R * 1.05 || onMouth;
+  const ev = b.event && b.event.type;
+
+  if (ev === 'raspberry' && onHead) return bounceFood();
+  const canEat = b.mouth.open >= CONFIG.mouth.biteThreshold && b.chew <= 0 &&
+                 Math.abs(b.turn) < 0.35 && ev !== 'sneeze';
+  if (onMouth && canEat) return doBite();
+  if (onHead) return doSplat(spoon.x, spoon.y);
+  // Clicking thin air does nothing.
+}
+
+function doBite() {
+  const b = baby;
+  S.combo++;
+  const mult = Math.min(CONFIG.score.maxMultiplier, 1 + (S.combo - 1) * CONFIG.score.comboStep);
+  const pts = Math.round(CONFIG.score.bite * mult);
+  S.score += pts;
+  S.bites++; S.totalBites++;
+  addMood(CONFIG.mood.biteGain + (b.curious > 0 ? 3 : 0));
+  spoon.loaded = false;
+  b.chew = 0.8; b.bounce = 1; b.curious = 0; b.laugh = 0;
+  b.mouth.state = 'closed'; b.mouth.timer = closedDuration();
+  Sound.play('nom', S.combo);
+  const m = mouthPos();
+  addText(m.x, m.y - 90, '+' + pts, '#FF5C9E', 38, 1);
+  if (mult > 1) addText(m.x, m.y - 50, `Combo x${mult}`, '#F2A900', 26, 1);
+  for (let i = 0; i < 10; i++) {
+    const a = rand(0, TAU), sp = rand(120, 260);
+    particles.push({ type: i % 2 ? 'heart' : 'star', x: m.x, y: m.y - 20, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 120,
+      g: 300, life: 0.9, max: 0.9, size: rand(8, 14), color: i % 2 ? '#FF5C9E' : '#FFD84D', rot: 0, vr: rand(-5, 5) });
+  }
+  const hc = $('hudCombo'); hc.style.transform = 'scale(1.35)'; setTimeout(() => hc.style.transform = '', 120);
+  if (S.bites >= CONFIG.level.bitesToWin) startLevelEnding();
+}
+
+function doSplat(x, y) {
+  const b = baby, R = CONFIG.baby.headRadius, f = food();
+  S.combo = 0; S.levelMisses++;
+  addMood(-CONFIG.mood.missPenalty);
+  addMess(CONFIG.mess.splat);
+  spoon.loaded = false;
+  // Keep the splat on the face, relative to the head centre.
+  let dx = x - b.x, dy = y - b.y;
+  const d = Math.hypot(dx, dy), maxD = R * 0.85;
+  if (d > maxD) { dx *= maxD / d; dy *= maxD / d; }
+  b.faceSplats.push(makeSplat(dx, dy, rand(14, 22), f));
+  if (b.faceSplats.length > CONFIG.fx.maxFaceSplats) b.faceSplats.shift();
+  b.grumpy = 1.3;
+  b.vx += Math.sign(b.x - x || 1) * 250; // recoil
+  S.shake = Math.max(S.shake, CONFIG.fx.shakeSplat);
+  Sound.play('splat');
+  addText(x, y - 50, ['Splat!', 'Yuck!', 'Blegh!', 'Nope!'][Math.floor(Math.random() * 4)], '#E8488A', 30, 0.9);
+  for (let i = 0; i < 16; i++) {
+    const a = rand(0, TAU), sp = rand(80, 340);
+    particles.push({ type: i < 5 ? 'food' : 'dot', x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 100,
+      g: 900, life: 1.5, max: 1.5, size: rand(4, 8), color: Math.random() < 0.5 ? f.color : f.light,
+      landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
+  }
+}
+
+// Spoon moved too fast: the food flies off and lands on the floor.
+function dropFood() {
+  const f = food();
+  spoon.loaded = false;
+  S.combo = 0;
+  addMess(CONFIG.mess.drop);
+  addMood(-CONFIG.mood.dropPenalty);
+  Sound.play('whoops');
+  addText(spoon.x, spoon.y - 40, 'Too fast!', '#A0703C', 26, 0.9);
+  particles.push({ type: 'food', x: spoon.x, y: spoon.y, vx: spoon.svx * 0.35, vy: spoon.svy * 0.35 - 150,
+    g: 1300, life: 3, max: 3, size: 11, color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15), big: true });
+}
+
+// Raspberry: the food bounces off and flies away.
+function bounceFood() {
+  const f = food();
+  spoon.loaded = false;
+  S.combo = 0;
+  addMood(-CONFIG.mood.bouncePenalty);
+  addMess(CONFIG.mess.bounce);
+  Sound.play('splat');
+  addText(spoon.x, spoon.y - 50, 'Pbbbbt!', '#C2185B', 32, 1);
+  particles.push({ type: 'food', x: spoon.x, y: spoon.y, vx: rand(-350, 350), vy: -650,
+    g: 1300, life: 3, max: 3, size: 11, color: f.color, landY: rand(CONFIG.world.floorY + 20, view.H - 15), big: true });
+}
+
+function reload() {
+  if (S.screen !== 'playing' || spoon.loaded) return;
+  spoon.loaded = true;
+  Sound.play('scoop');
+  const f = food();
+  for (let i = 0; i < 6; i++)
+    particles.push({ type: 'dot', x: bowl.x + rand(-20, 20), y: bowl.y - 10, vx: rand(-80, 80), vy: rand(-220, -100),
+      g: 800, life: 0.6, max: 0.6, size: rand(3, 6), color: f.light });
+}
+
+function funnyFace() {
+  if (S.screen !== 'playing' || S.funnyCd > 0) return;
+  const b = baby;
+  if (b.event && b.event.type === 'sneeze') { addText(b.x, b.y - 150, 'Not now!', '#8a6aa0', 24, 0.8); return; }
+  if (b.event) endEvent();
+  b.laugh = CONFIG.funnyFace.laughTime;
+  b.chew = 0;
+  S.funnyCd = CONFIG.funnyFace.cooldown;
+  Sound.play('laugh');
+  addText(b.x, b.y - 150, ['Hehehe!', 'Giggle!', 'Hahaha!'][Math.floor(Math.random() * 3)], '#F2A900', 32, 1.1);
+}
+
+function triggerAirplane() {
+  const b = baby;
+  spoon.turnHist.length = 0;
+  spoon.planeCd = CONFIG.airplane.cooldown;
+  if (b.curious <= 0) addText(spoon.x, spoon.y - 50, 'Wheee! ✈', '#6EC6FF', 30, 1);
+  b.curious = CONFIG.airplane.curiousTime;
+  Sound.play('airplane');
+  // Curious baby opens up soon, and for longer.
+  if (!b.event && b.mouth.state === 'closed') { b.mouth.timer = Math.min(b.mouth.timer, 0.3); b.mouth.nextLong = true; }
+  if (b.mouth.state === 'fake') { b.mouth.state = 'closed'; b.mouth.timer = 0.2; b.mouth.nextLong = true; }
+  for (let i = 0; i < 8; i++)
+    particles.push({ type: 'star', x: b.x + rand(-80, 80), y: b.y - rand(100, 150), vx: rand(-40, 40), vy: rand(-80, -30),
+      g: 0, life: 0.8, max: 0.8, size: rand(6, 10), color: '#6EC6FF', rot: 0, vr: rand(-4, 4) });
+}
+
+/* =====================================================================
+   Random baby events: sneeze, look away, raspberry
+   ===================================================================== */
+function pickEvent() {
+  const w = CONFIG.events.weights;
+  const total = w.sneeze + w.lookAway + w.raspberry;
+  let r = Math.random() * total;
+  if ((r -= w.sneeze) < 0) return 'sneeze';
+  if ((r -= w.lookAway) < 0) return 'lookAway';
+  return 'raspberry';
+}
+
+function startEvent(type) {
+  const e = CONFIG.events, b = baby;
+  b.curious = 0;
+  if (type === 'sneeze') {
+    b.event = { type, t: 0, dur: e.sneezeWindup + e.sneezeBurst, sprayed: false };
+    Sound.play('ah');
+    addText(b.x, b.y - 150, 'Ah... ahh...', '#8a6aa0', 28, e.sneezeWindup);
+  } else if (type === 'lookAway') {
+    b.event = { type, t: 0, dur: rand(e.lookAwayMin, e.lookAwayMax) };
+    b.turnTarget = Math.random() < 0.5 ? -1 : 1;
+  } else {
+    b.event = { type, t: 0, dur: e.raspberryTime };
+    Sound.play('raspberry', e.raspberryTime);
+  }
+}
+
+function updateEvent(dt) {
+  const e = baby.event;
+  e.t += dt;
+  if (e.type === 'sneeze' && !e.sprayed && e.t >= CONFIG.events.sneezeWindup) { e.sprayed = true; doSneeze(); }
+  if (e.type === 'raspberry' && Math.random() < dt * 25) {
+    const m = mouthPos();
+    particles.push({ type: 'dot', x: m.x + rand(-15, 15), y: m.y, vx: rand(-150, 150), vy: rand(-150, 20),
+      g: 600, life: 0.5, max: 0.5, size: rand(2, 4), color: '#CFEFFF' });
+  }
+  if (e.t >= e.dur) endEvent();
+}
+
+function endEvent() {
+  baby.event = null;
+  baby.turnTarget = 0;
+  baby.mouth.state = 'closed';
+  baby.mouth.timer = closedDuration() * 0.5;
+  S.eventTimer = nextEventGap();
+}
+
+function doSneeze() {
+  const m = mouthPos(), f = food();
+  S.shake = CONFIG.fx.shakeSneeze;
+  Sound.play('choo');
+  addText(m.x, m.y - 190, 'ACHOO!', '#E8488A', 52, 1.1);
+  addMess(CONFIG.mess.sneeze);
+  // Spray food everywhere; it lands on the floor.
+  for (let i = 0; i < 28; i++) {
+    const a = rand(-Math.PI * 0.95, -Math.PI * 0.05) + (Math.random() < 0.5 ? 0 : Math.PI);
+    const sp = rand(250, 750);
+    particles.push({ type: 'food', x: m.x, y: m.y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp * 0.8,
+      g: 1100, life: 3, max: 3, size: rand(4, 9), color: Math.random() < 0.6 ? f.color : f.light,
+      landY: rand(CONFIG.world.floorY + 20, view.H - 15) });
+  }
+  // And a few splats right on the "camera".
+  for (let i = 0; i < 3; i++) {
+    screenSplats.push(Object.assign(makeSplat(rand(view.W * 0.15, view.W * 0.85), rand(150, 650), rand(35, 60), f),
+      { life: 3, max: 3 }));
+  }
+  // A loaded spoon close by gets its food knocked off.
+  if (spoon.loaded && dist(spoon.x, spoon.y, m.x, m.y) < 260) dropFood();
+}
+
+/* =====================================================================
+   Updates
+   ===================================================================== */
+function updateBaby(dt, gameplay) {
+  const b = baby;
+  b.chew = Math.max(0, b.chew - dt);
+  b.grumpy = Math.max(0, b.grumpy - dt);
+  b.curious = Math.max(0, b.curious - dt);
+  b.bounce = Math.max(0, b.bounce - dt * 2.5);
+  if (b.laugh > 0) {
+    b.laugh -= dt;
+    if (b.laugh <= 0) { b.laugh = 0; b.mouth.state = 'closed'; b.mouth.timer = closedDuration() * 0.6; }
+  }
+
+  // Blinking
+  b.blinkTimer -= dt;
+  if (b.blinkTimer <= 0) { b.blink = 0.13; b.blinkTimer = rand(2, 5); }
+  b.blink = Math.max(0, b.blink - dt);
+
+  // Tears when crying
+  if (b.crying) {
+    b.tearTimer -= dt;
+    if (b.tearTimer <= 0) {
+      b.tearTimer = 0.08;
+      const side = Math.random() < 0.5 ? -1 : 1;
+      particles.push({ type: 'dot', x: b.x + side * 45, y: b.y - 5, vx: side * rand(60, 220), vy: rand(-250, -80),
+        g: 900, life: 1, max: 1, size: rand(4, 7), color: '#7FD3FF' });
+    }
+  }
+
+  // Events
+  if (b.event) updateEvent(dt);
+  else if (gameplay && b.chew <= 0 && b.laugh <= 0) {
+    S.eventTimer -= dt;
+    if (S.eventTimer <= 0 && b.mouth.state === 'closed' && b.mouth.open < 0.2) startEvent(pickEvent());
+  }
+
+  updateHead(dt, gameplay);
+  updateMouth(dt);
+}
+
+function updateHead(dt, gameplay) {
+  const b = baby, C = CONFIG.baby;
+  let speed = babySpeed();
+  if (b.curious > 0) speed *= 0.35;
+  if (b.dodge > 0) { speed *= C.dodgeSpeedMult; b.dodge -= dt; }
+
+  // Pick a new place to drift to
+  b.moveTimer -= dt;
+  if (b.moveTimer <= 0) {
+    if (Math.random() < C.pauseChance) { b.tx = b.x; b.ty = b.y; }
+    else { b.tx = b.restX + rand(-C.rangeX, C.rangeX); b.ty = b.restY + rand(-C.rangeY, C.rangeY); }
+    b.moveTimer = rand(C.moveIntervalMin, C.moveIntervalMax) / (1 + lvl() * 0.1);
+  }
+
+  // Dodge a loaded spoon that comes near a closed mouth
+  if (gameplay && spoon.loaded && b.curious <= 0 && b.dodge <= 0 && b.laugh <= 0 && b.chew <= 0 && b.mouth.open < 0.5) {
+    const m = mouthPos();
+    const chance = C.dodgeChancePerSec * (1 + lvl() * C.dodgePerLevel) * moodStress();
+    if (dist(spoon.x, spoon.y, m.x, m.y) < C.dodgeRadius && Math.random() < chance * dt) {
+      let dir = Math.sign(m.x - spoon.x) || 1;
+      if (Math.abs(b.x + dir * 120 - b.restX) > C.rangeX) dir = -dir; // cornered: go the other way
+      b.tx = clamp(b.x + dir * rand(110, 180), b.restX - C.rangeX, b.restX + C.rangeX);
+      b.ty = b.restY + (spoon.y < m.y ? 1 : -1) * C.rangeY * rand(0.4, 1);
+      b.dodge = C.dodgeDuration;
+      b.moveTimer = rand(0.5, 1);
+      Sound.play('dodge');
+    }
+  }
+
+  // Target with event/crying adjustments
+  let tx = b.tx, ty = b.ty;
+  if (b.crying) { tx = b.restX; ty = b.restY; }
+  if (b.event && b.event.type === 'sneeze') ty = b.event.sprayed ? b.restY + 30 : b.restY - 40;
+
+  // Smooth "springy" follow with a speed cap
+  const dx = tx - b.x, dy = ty - b.y, d = Math.hypot(dx, dy) || 1;
+  const want = Math.min(speed, d * 4);
+  const k = Math.min(1, dt * 8);
+  b.vx += (dx / d * want - b.vx) * k;
+  b.vy += (dy / d * want - b.vy) * k;
+  b.x += b.vx * dt;
+  b.y += b.vy * dt;
+
+  b.turn += (b.turnTarget - b.turn) * Math.min(1, dt * 6);
+}
+
+// Mouth: an irregular open/close rhythm, with fake-outs, plus overrides for events.
+function updateMouth(dt) {
+  const b = baby, m = b.mouth, C = CONFIG.mouth;
+  let target;
+  const ev = b.event && b.event.type;
+
+  if (b.crying) target = 0.85;
+  else if (b.chew > 0) target = 0;
+  else if (b.laugh > 0) target = 1;
+  else if (ev === 'sneeze') target = b.event.sprayed ? 0.9 : 0.4; // the half-open windup is a trap!
+  else if (ev === 'raspberry' || ev === 'lookAway') target = 0;
+  else {
+    if (b.curious > 0 && m.state === 'closed') m.timer = Math.min(m.timer, 0.4);
+    m.timer -= dt;
+    if (m.state === 'closed') {
+      target = 0;
+      if (m.timer <= 0) {
+        if (b.curious <= 0 && !m.nextLong && Math.random() < fakeOutChance()) {
+          m.state = 'fake'; m.timer = C.fakeOutTime;
+        } else {
+          const long = b.curious > 0 || m.nextLong;
+          m.state = 'open'; m.timer = openDuration() * (long ? CONFIG.airplane.openMultiplier : 1);
+          m.nextLong = false;
+        }
+      }
+    } else if (m.state === 'fake') {
+      target = C.fakeOutPeak;
+      if (m.timer <= 0) {
+        m.state = 'closed'; m.timer = closedDuration(); m.snap = true;
+        if (S.screen === 'playing') Sound.play('fake');
+      }
+    } else { // open
+      target = 1;
+      if (m.timer <= 0) { m.state = 'closed'; m.timer = closedDuration(); }
+    }
+  }
+
+  const sp = target > m.open ? C.openSpeed : (m.snap ? C.snapSpeed : C.closeSpeed);
+  m.open += (target - m.open) * Math.min(1, sp * dt);
+  if (m.open < 0.05) m.snap = false;
+}
+
+function updateSpoon(dt, gameplay) {
+  const offY = pointer.touch ? CONFIG.spoon.touchOffsetY : 0;
+  const nx = pointer.x, ny = pointer.y - offY;
+  if (spoon.teleport) {
+    spoon.x = nx; spoon.y = ny; spoon.svx = spoon.svy = 0; spoon.teleport = false;
+    spoon.trail.length = 0; spoon.lastSample = null; spoon.turnHist.length = 0;
+  } else {
+    const a = 1 - Math.exp(-dt / CONFIG.spoon.speedSmoothing);
+    spoon.svx += ((nx - spoon.x) / dt - spoon.svx) * a;
+    spoon.svy += ((ny - spoon.y) / dt - spoon.svy) * a;
+    spoon.x = nx; spoon.y = ny;
+  }
+  spoon.speed = Math.hypot(spoon.svx, spoon.svy);
+  spoon.jab = Math.max(0, spoon.jab - dt * 4);
+  spoon.planeCd = Math.max(0, spoon.planeCd - dt);
+
+  spoon.trail.push({ x: spoon.x, y: spoon.y, t: S.time });
+  while (spoon.trail.length && S.time - spoon.trail[0].t > 0.35) spoon.trail.shift();
+
+  if (!gameplay) return;
+  if (spoon.loaded && spoon.speed > CONFIG.spoon.maxSpeed) dropFood();
+  trackAirplane();
+}
+
+// Sum up how much the spoon's direction has turned recently.
+// A full loop in one direction = ~360° of turning = airplane!
+function trackAirplane() {
+  const A = CONFIG.airplane;
+  if (!spoon.loaded) { spoon.turnHist.length = 0; spoon.lastSample = null; return; }
+  const last = spoon.lastSample;
+  if (!last) { spoon.lastSample = { x: spoon.x, y: spoon.y, ang: null }; return; }
+  const dx = spoon.x - last.x, dy = spoon.y - last.y;
+  if (Math.hypot(dx, dy) >= A.minStep) {
+    const ang = Math.atan2(dy, dx);
+    if (last.ang !== null) {
+      let d = ang - last.ang;
+      while (d > Math.PI) d -= TAU;
+      while (d < -Math.PI) d += TAU;
+      if (Math.abs(d) < 2.2) spoon.turnHist.push({ t: S.time, d }); // ignore sharp reversals (zig-zags aren't loops)
+    }
+    spoon.lastSample = { x: spoon.x, y: spoon.y, ang };
+  }
+  while (spoon.turnHist.length && S.time - spoon.turnHist[0].t > A.window) spoon.turnHist.shift();
+  const total = spoon.turnHist.reduce((s, h) => s + h.d, 0);
+  if (Math.abs(total) > A.loopAngle && spoon.planeCd <= 0) triggerAirplane();
+}
+
+function updateParticles(dt) {
+  for (const p of particles) {
+    p.vy += (p.g || 0) * dt;
+    p.x += p.vx * dt;
+    p.y += p.vy * dt;
+    p.life -= dt;
+    if (p.rot !== undefined) p.rot += (p.vr || 0) * dt;
+    // Food lands on the floor and leaves a splat
+    if (p.type === 'food' && p.vy > 0 && p.y >= p.landY) {
+      p.life = 0;
+      floorSplats.push(makeSplat(clamp(p.x, 10, view.W - 10), p.landY, p.big ? rand(18, 26) : rand(6, 12), { color: p.color, light: p.color }));
+      if (floorSplats.length > CONFIG.fx.maxFloorSplats) floorSplats.shift();
+      if (p.big && S.screen === 'playing') Sound.play('plop');
+    }
+  }
+  particles = particles.filter(p => p.life > 0);
+
+  for (const t of floatTexts) { t.life -= dt; t.y -= 40 * dt; }
+  floatTexts = floatTexts.filter(t => t.life > 0);
+
+  for (const s of screenSplats) { s.life -= dt; s.y += 12 * dt; } // slowly slide down the screen
+  screenSplats = screenSplats.filter(s => s.life > 0);
+}
+
+// Only touch the DOM when a value actually changes.
+const hudCache = {};
+function setHud(id, key, val, fn) {
+  if (hudCache[id + key] === val) return;
+  hudCache[id + key] = val;
+  fn($(id), val);
+}
+function updateHUD() {
+  setHud('hudLevel', 't', S.level, (e, v) => e.textContent = v);
+  setHud('hudBites', 't', `${S.bites}/${CONFIG.level.bitesToWin}`, (e, v) => e.textContent = v);
+  setHud('hudScore', 't', S.score, (e, v) => e.textContent = v);
+  const mult = Math.min(CONFIG.score.maxMultiplier, 1 + (S.combo - 1) * CONFIG.score.comboStep);
+  setHud('hudCombo', 't', S.combo > 1 ? `Combo x${mult}` : '', (e, v) => { e.textContent = v; e.classList.toggle('hidden', !v); });
+  const mood = Math.round(S.mood);
+  setHud('moodFill', 'w', mood, (e, v) => {
+    e.style.width = v + '%';
+    e.style.backgroundColor = v > 60 ? '#4CC38A' : v > 30 ? '#FFB23F' : '#FF5A5A';
+  });
+  setHud('moodFace', 't', mood > 60 ? '😊' : mood > 30 ? '😐' : mood > 0 ? '😟' : '😭', (e, v) => e.textContent = v);
+  setHud('messFill', 'w', Math.round(S.mess), (e, v) => e.style.width = v + '%');
+  setHud('funnyBtn', 'cd', Math.round(S.funnyCd / CONFIG.funnyFace.cooldown * 100) / 100,
+    (e, v) => e.style.setProperty('--cd', v));
+}
+
+function update(dt) {
+  S.time += dt;
+  const gameplay = S.screen === 'playing';
+  if (gameplay) {
+    S.funnyCd = Math.max(0, S.funnyCd - dt);
+    if (baby.chew <= 0) addMood(-CONFIG.mood.decayPerSec * dt);
+  }
+  if (S.screen === 'crying' || S.screen === 'levelEnding') {
+    S.pendingTimer -= dt;
+    if (S.pendingTimer <= 0) S.screen === 'crying' ? showGameOver() : showLevelScreen();
+  }
+  updateBaby(dt, S.screen === 'playing');
+  updateSpoon(dt, S.screen === 'playing');
+  updateParticles(dt);
+  S.shake *= Math.exp(-dt * 8);
+  if (S.shake < 0.3) S.shake = 0;
+  updateHUD();
+}
+
+/* =====================================================================
+   Drawing helpers
+   ===================================================================== */
+function circle(x, y, r, fill) { ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+function ellipse(x, y, rx, ry, fill) { ctx.beginPath(); ctx.ellipse(x, y, Math.max(0.1, rx), Math.max(0.1, ry), 0, 0, TAU); ctx.fillStyle = fill; ctx.fill(); }
+function rrect(x, y, w, h, r) {
+  r = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+function line(x1, y1, x2, y2, color, w) {
+  ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2);
+  ctx.strokeStyle = color; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.stroke();
+}
+
+// A splat is a big blob with a few random droplets around it.
+function makeSplat(x, y, r, f) {
+  const blobs = [];
+  const n = 5 + Math.floor(Math.random() * 4);
+  for (let i = 0; i < n; i++) {
+    const a = rand(0, TAU), d = rand(r * 0.6, r * 1.4);
+    blobs.push({ dx: Math.cos(a) * d, dy: Math.sin(a) * d, r: rand(r * 0.2, r * 0.45) });
+  }
+  return { x, y, r, blobs, color: f.color, light: f.light };
+}
+function drawSplat(s, x, y, flat = 1, alpha = 1) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+  ctx.translate(x, y);
+  ctx.scale(1, flat);
+  circle(0, 0, s.r, s.color);
+  for (const b of s.blobs) circle(b.dx, b.dy, b.r, s.color);
+  circle(-s.r * 0.3, -s.r * 0.3, s.r * 0.35, s.light);
+  ctx.restore();
+}
+
+function drawStar(x, y, r, rot, color) {
+  ctx.save(); ctx.translate(x, y); ctx.rotate(rot);
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const rr = i % 2 ? r * 0.45 : r, a = i * Math.PI / 5 - Math.PI / 2;
+    ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+  }
+  ctx.closePath(); ctx.fillStyle = color; ctx.fill(); ctx.restore();
+}
+function drawHeart(x, y, s, color) {
+  ctx.save(); ctx.translate(x, y); ctx.scale(s / 10, s / 10);
+  ctx.beginPath();
+  ctx.moveTo(0, 4);
+  ctx.bezierCurveTo(-10, -4, -6, -12, 0, -6);
+  ctx.bezierCurveTo(6, -12, 10, -4, 0, 4);
+  ctx.fillStyle = color; ctx.fill(); ctx.restore();
+}
+
+function addText(x, y, text, color, size, life) {
+  floatTexts.push({ x, y, text, color, size, life, max: life });
+}
+
+/* =====================================================================
+   Scene drawing
+   ===================================================================== */
+function drawBackground() {
+  const W = view.W, H = view.H, F = CONFIG.world.floorY;
+  // The world is letterboxed; paint beyond its edges so the scene fills the window.
+  const L = -view.ox / view.scale - 20, R = W + view.ox / view.scale + 20;
+  const T = -view.oy / view.scale - 20, B = H + view.oy / view.scale + 20;
+
+  // Wall
+  ctx.fillStyle = '#FFF1D0';
+  ctx.fillRect(L, T, R - L, F - T);
+  ctx.fillStyle = '#FFE3B0';
+  for (let x = Math.floor(L / 80) * 80; x < R; x += 80)
+    for (let y = Math.floor(T / 80) * 80; y < F; y += 80) {
+      circle(x + ((y / 80) % 2 ? 40 : 0), y, 7, '#FFE3B0');
+    }
+
+  // Window with sky
+  const wx = W * 0.82, wy = 150;
+  rrect(wx - 95, wy - 5, 190, 170, 14); ctx.fillStyle = '#fff'; ctx.fill();
+  rrect(wx - 85, wy + 5, 170, 150, 8); ctx.fillStyle = '#9EDCFF'; ctx.fill();
+  circle(wx + 45, wy + 45, 22, '#FFE45C');
+  ellipse(wx - 30, wy + 90, 34, 14, '#fff'); ellipse(wx - 10, wy + 80, 22, 14, '#fff');
+  line(wx, wy + 5, wx, wy + 155, '#fff', 8); line(wx - 85, wy + 80, wx + 85, wy + 80, '#fff', 8);
+
+  // Bunting garland
+  ctx.beginPath(); ctx.moveTo(L, 70); ctx.quadraticCurveTo(W / 2, 130, R, 70);
+  ctx.strokeStyle = '#D9A6FF'; ctx.lineWidth = 3; ctx.stroke();
+  const cols = ['#FF5C9E', '#FFD84D', '#4CC38A', '#6EC6FF', '#B57BFF'];
+  for (let i = 0, x = L + 30; x < R; x += 70, i++) {
+    const t = (x - L) / (R - L), y = 70 + 120 * t * (1 - t); // follows the garland curve
+    ctx.beginPath(); ctx.moveTo(x - 16, y); ctx.lineTo(x + 16, y); ctx.lineTo(x, y + 30); ctx.closePath();
+    ctx.fillStyle = cols[i % cols.length]; ctx.fill();
+  }
+
+  // Baseboard + checkered floor
+  ctx.fillStyle = '#FFB7D0'; ctx.fillRect(L, F - 14, R - L, 14);
+  ctx.fillStyle = '#FFF8EC'; ctx.fillRect(L, F, R - L, B - F);
+  ctx.fillStyle = '#CFEFE4';
+  const ts = 60;
+  for (let y = F, row = 0; y < B; y += ts, row++)
+    for (let x = Math.floor(L / ts) * ts; x < R; x += ts)
+      if ((Math.round(x / ts) + row) % 2 === 0) ctx.fillRect(x, y, ts, ts);
+}
+
+function drawBowl() {
+  const x = bowl.x, y = bowl.y, f = food();
+  // Stool
+  line(x - 40, y + 30, x - 50, y + 95, '#B07BD6', 9);
+  line(x + 40, y + 30, x + 50, y + 95, '#B07BD6', 9);
+  rrect(x - 62, y + 18, 124, 18, 9); ctx.fillStyle = '#C99AF0'; ctx.fill();
+  // Bowl
+  ellipse(x, y - 4, 52, 16, f.color);
+  ellipse(x - 10, y - 10, 26, 8, f.light);
+  ctx.beginPath(); ctx.moveTo(x - 58, y - 4); ctx.quadraticCurveTo(x, y + 60, x + 58, y - 4); ctx.closePath();
+  ctx.fillStyle = '#6EC6FF'; ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x, y - 4, 58, 16, 0, 0, TAU); ctx.strokeStyle = '#4AA8E8'; ctx.lineWidth = 4; ctx.stroke();
+  circle(x - 22, y + 14, 5, '#fff'); circle(x, y + 20, 5, '#fff'); circle(x + 22, y + 14, 5, '#fff');
+
+  // Pulsing hint when the spoon is empty
+  if (S.screen === 'playing' && !spoon.loaded) {
+    const p = (Math.sin(S.time * 6) + 1) / 2;
+    ctx.beginPath(); ctx.arc(x, y, bowl.r + p * 10, 0, TAU);
+    ctx.strokeStyle = `rgba(255,92,158,${0.4 + p * 0.5})`; ctx.lineWidth = 5; ctx.stroke();
+    drawText('Refill!', x, y - 70, '#FF5C9E', 24, 1);
+  }
+}
+
+function drawChairAndBody() {
+  const b = baby, rx = b.restX;
+  const bx = lerp(rx, b.x, 0.35);
+  const topY = lerp(b.y + 80, b.restY + 80, 0.4);
+
+  // Chair legs
+  line(rx - 110, 600, rx - 160, 790, '#FF8FB8', 14);
+  line(rx + 110, 600, rx + 160, 790, '#FF8FB8', 14);
+  line(rx - 140, 720, rx + 140, 720, '#FF8FB8', 10);
+  // Chair back
+  rrect(rx - 140, 370, 280, 240, 50); ctx.fillStyle = '#FF7BAC'; ctx.fill();
+  rrect(rx - 120, 390, 240, 200, 40); ctx.fillStyle = '#FF9CC2'; ctx.fill();
+
+  // Body (onesie) with bib
+  rrect(bx - 95, topY, 190, 600 - topY, 60); ctx.fillStyle = '#6EC6FF'; ctx.fill();
+  for (let i = 0; i < 5; i++) circle(bx - 60 + i * 30, topY + 110 + (i % 2) * 20, 6, '#A8DEFF');
+  ctx.beginPath();
+  ctx.moveTo(bx - 60, topY + 15);
+  ctx.quadraticCurveTo(bx, topY + 150, bx + 60, topY + 15);
+  ctx.closePath(); ctx.fillStyle = '#fff'; ctx.fill();
+  // Bib gets stained as mess goes up
+  const stains = Math.floor(S.mess / 15);
+  for (let i = 0; i < stains; i++) circle(bx - 25 + ((i * 37) % 50), topY + 30 + ((i * 23) % 45), 6, food().color);
+
+  // Tray
+  rrect(rx - 175, 552, 350, 36, 16); ctx.fillStyle = '#FFFFFF'; ctx.fill();
+  rrect(rx - 175, 578, 350, 10, 5); ctx.fillStyle = '#F1DDF5'; ctx.fill();
+
+  // Arms and hands (they flap when laughing or crying)
+  const flap = (b.laugh > 0 || b.crying) ? Math.sin(S.time * 25) * 18 : Math.sin(S.time * 2) * 3;
+  for (const side of [-1, 1]) {
+    const sx = bx + side * 78, sy = topY + 45;
+    const hx = rx + side * 120, hy = 555 - (side === 1 ? flap : -flap);
+    line(sx, sy, hx, hy, '#6EC6FF', 30);
+    circle(hx, hy, 20, '#FFD2AE');
+  }
+}
+
+function drawHead() {
+  const b = baby, R = CONFIG.baby.headRadius, f = food();
+  const ev = b.event && b.event.type;
+  const t = S.time;
+
+  ctx.save();
+  let hx = b.x, hy = b.y;
+  if (b.crying) hx += Math.sin(t * 30) * 4;
+  if (b.laugh > 0) hy += Math.sin(t * 30) * 4;
+  ctx.translate(hx, hy);
+  // Squash-and-stretch bounce after a bite
+  const sq = Math.sin(b.bounce * Math.PI * 3) * 0.09 * b.bounce;
+  ctx.scale(1 + sq, 1 - sq);
+  if (ev === 'sneeze') ctx.rotate(b.event.sprayed ? 0.08 : -0.08);
+
+  const fx = b.turn * R * 0.45;  // features shift when turning
+
+  // Ears
+  circle(-R * 0.95 - b.turn * 15, 5, 26, '#FFC79E');
+  circle(R * 0.95 - b.turn * 15, 5, 26, '#FFC79E');
+  // Head
+  circle(0, 0, R, '#FFD9B8');
+  // Hair curl
+  ctx.beginPath(); ctx.arc(fx * 0.5, -R + 8, 18, Math.PI * 0.9, Math.PI * 2.3);
+  ctx.strokeStyle = '#A0703C'; ctx.lineWidth = 7; ctx.lineCap = 'round'; ctx.stroke();
+
+  // Cheeks (puffed while chewing)
+  const cheekR = b.chew > 0 ? 26 + Math.sin(t * 25) * 3 : 20;
+  ctx.globalAlpha = 0.55;
+  circle(fx - 62, 30, cheekR, '#FF9FB5');
+  circle(fx + 62, 30, cheekR, '#FF9FB5');
+  ctx.globalAlpha = 1;
+
+  // Eyes
+  let eyeMode = 'open';
+  if (b.crying) eyeMode = 'cry';
+  else if (b.laugh > 0 || b.chew > 0) eyeMode = 'happy';
+  else if (ev === 'sneeze') eyeMode = 'squint';
+  else if (b.blink > 0) eyeMode = 'blink';
+
+  // Pupils look at the spoon (or away during look-away)
+  let lookX = 0, lookY = 0;
+  if (ev === 'lookAway') { lookX = b.turnTarget * 7; lookY = -2; }
+  else if (['playing', 'levelEnding'].includes(S.screen)) {
+    const dx = spoon.x - hx, dy = spoon.y - hy, d = Math.hypot(dx, dy) || 1;
+    const m = Math.min(7, d / 30);
+    lookX = dx / d * m; lookY = dy / d * m;
+  }
+  for (const side of [-1, 1]) {
+    const ex = fx + side * 38, ey = -12;
+    ctx.strokeStyle = '#4A2C2A'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+    if (eyeMode === 'open') {
+      ellipse(ex, ey, 17, 19, '#fff');
+      circle(ex + lookX, ey + lookY, b.curious > 0 ? 12 : 10, '#3B2A4A');
+      circle(ex + lookX - 3, ey + lookY - 4, 3.5, '#fff');
+    } else if (eyeMode === 'blink') {
+      line(ex - 13, ey, ex + 13, ey, '#4A2C2A', 5);
+    } else if (eyeMode === 'happy') {
+      ctx.beginPath(); ctx.arc(ex, ey + 6, 13, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();
+    } else { // squint / cry: tightly shut > <
+      ctx.beginPath();
+      ctx.moveTo(ex - side * 13, ey - 9); ctx.lineTo(ex + side * 9, ey); ctx.lineTo(ex - side * 13, ey + 9);
+      ctx.stroke();
+    }
+  }
+
+  // Eyebrows depend on mood
+  const angry = b.grumpy > 0 || S.mood < 30 || b.crying;
+  const worried = !angry && S.mood < 55;
+  for (const side of [-1, 1]) {
+    const ex = fx + side * 38;
+    const inner = angry ? -34 : worried ? -50 : -46;
+    const outer = angry ? -46 : worried ? -42 : -46;
+    line(ex - side * 16, outer, ex + side * 10, inner, '#A0703C', 5);
+  }
+
+  // Nose
+  ellipse(fx, 16, 7, 5, '#F5B996');
+
+  // Mouth
+  const my = 48, o = b.mouth.open;
+  if (ev === 'raspberry') {
+    const w = Math.sin(t * 60) * 2;
+    ellipse(fx, my + 12, 14, 12 + w, '#FF7C9C');   // tongue out
+    ellipse(fx, my, 24 + w, 9, '#E0506F');          // vibrating lips
+  } else if (b.chew > 0) {
+    const w = Math.sin(t * 25) * 4;
+    ctx.beginPath(); ctx.moveTo(fx - 14, my + w * 0.3); ctx.quadraticCurveTo(fx, my + 8 - w, fx + 14, my - w * 0.3);
+    ctx.strokeStyle = '#B23A57'; ctx.lineWidth = 5; ctx.stroke();
+  } else if (o > 0.08) {
+    const rx = 15 + 17 * o, ry = 3 + 27 * o, cy = my + ry * 0.3;
+    ellipse(fx, cy, rx, ry, '#8B2635');
+    ctx.save();
+    ctx.beginPath(); ctx.ellipse(fx, cy, rx, ry, 0, 0, TAU); ctx.clip();
+    ellipse(fx, cy + ry * 0.75, rx * 0.7, ry * 0.5, '#FF7C9C');
+    ctx.restore();
+    ctx.beginPath(); ctx.ellipse(fx, cy, rx, ry, 0, 0, TAU); ctx.strokeStyle = '#D9486B'; ctx.lineWidth = 3; ctx.stroke();
+  } else {
+    const curve = b.grumpy > 0 ? -12 : lerp(-12, 14, S.mood / CONFIG.mood.max);
+    ctx.beginPath(); ctx.moveTo(fx - 17, my); ctx.quadraticCurveTo(fx, my + curve, fx + 17, my);
+    ctx.strokeStyle = '#B23A57'; ctx.lineWidth = 5; ctx.lineCap = 'round'; ctx.stroke();
+  }
+
+  // Food splats stuck on the face, clipped to the head
+  if (b.faceSplats.length) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0, 0, R, 0, TAU); ctx.clip();
+    for (const s of b.faceSplats) drawSplat(s, s.x, s.y);
+    ctx.restore();
+  }
+  ctx.restore();
+
+  // "?" bubble when curious (airplane trick)
+  if (b.curious > 0 && !b.crying) {
+    const bob = Math.sin(t * 6) * 5;
+    circle(b.x + 95, b.y - 120 + bob, 24, '#fff');
+    drawText('?', b.x + 95, b.y - 120 + bob, '#6EC6FF', 32, 1);
+  }
+}
+
+function drawSpoon() {
+  if (!['playing', 'levelEnding', 'crying'].includes(S.screen)) return;
+  const f = food();
+  const speedRatio = clamp(spoon.speed / CONFIG.spoon.maxSpeed, 0, 1);
+
+  // Motion trail (helps with the airplane swoosh)
+  if (spoon.loaded && spoon.trail.length > 2) {
+    ctx.beginPath();
+    spoon.trail.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y));
+    ctx.strokeStyle = 'rgba(110,198,255,0.35)'; ctx.lineWidth = 10; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke();
+  }
+
+  ctx.save();
+  ctx.translate(spoon.x, spoon.y);
+  const s = 1 - Math.sin(spoon.jab * Math.PI) * 0.18; // quick "push" when delivering
+  ctx.scale(s, s);
+  const tilt = clamp(spoon.svx / 3000, -0.3, 0.3);
+  ctx.rotate(0.8 + tilt);
+  // Handle points down-right from the spoon bowl at the origin
+  rrect(14, -7, CONFIG.spoon.length, 14, 7); ctx.fillStyle = '#FF5C9E'; ctx.fill();
+  rrect(14, -3, 40, 6, 3); ctx.fillStyle = '#D9D9E6'; ctx.fill();
+  ellipse(0, 0, 28, 18, '#E6E6F0');
+  ellipse(-3, -3, 20, 12, '#C8C8D8');
+  if (spoon.loaded) {
+    // Food wobbles more the faster you go
+    const w = Math.sin(S.time * 45) * speedRatio * speedRatio * 6;
+    ellipse(-2 + w, -8, 20, 12, f.color);
+    ellipse(-7 + w, -12, 8, 5, f.light);
+  }
+  ctx.restore();
+
+  // Warning shake lines when close to spilling
+  if (spoon.loaded && speedRatio > 0.65) {
+    ctx.globalAlpha = (speedRatio - 0.65) / 0.35;
+    line(spoon.x - 34, spoon.y - 28, spoon.x - 26, spoon.y - 36, '#FF5A5A', 4);
+    line(spoon.x + 30, spoon.y - 30, spoon.x + 38, spoon.y - 38, '#FF5A5A', 4);
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    const a = clamp(p.life / p.max * 2, 0, 1);
+    ctx.globalAlpha = p.type === 'food' ? 1 : a;
+    if (p.type === 'star') drawStar(p.x, p.y, p.size, p.rot, p.color);
+    else if (p.type === 'heart') drawHeart(p.x, p.y, p.size, p.color);
+    else if (p.type === 'confetti') {
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size / 2, -p.size / 4, p.size, p.size / 2); ctx.restore();
+    } else circle(p.x, p.y, p.size, p.color);
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawText(text, x, y, color, size, alpha) {
+  ctx.globalAlpha = alpha;
+  ctx.font = `bold ${size}px "Trebuchet MS", "Segoe UI", sans-serif`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineWidth = size * 0.18; ctx.strokeStyle = '#fff'; ctx.lineJoin = 'round';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = color; ctx.fillText(text, x, y);
+  ctx.globalAlpha = 1;
+}
+
+function draw() {
+  const { dpr, scale, ox, oy } = view;
+  const sx = (Math.random() - 0.5) * S.shake * 2 * scale;
+  const sy = (Math.random() - 0.5) * S.shake * 2 * scale;
+  ctx.setTransform(dpr * scale, 0, 0, dpr * scale, dpr * (ox + sx), dpr * (oy + sy));
+
+  drawBackground();
+  for (const s of floorSplats) drawSplat(s, s.x, s.y, 0.45);
+  drawBowl();
+  drawChairAndBody();
+  drawHead();
+  drawParticles();
+  drawSpoon();
+  for (const t of floatTexts) {
+    const pop = 1 + Math.max(0, (t.life - t.max + 0.15) / 0.15) * 0.4; // pops in big, then settles
+    drawText(t.text, t.x, t.y, t.color, t.size * pop, clamp(t.life / t.max * 2.5, 0, 1));
+  }
+  for (const s of screenSplats) drawSplat(s, s.x, s.y, 1, clamp(s.life / s.max * 2, 0, 0.9));
+}
+
+/* =====================================================================
+   Input
+   ===================================================================== */
+function setPointer(e) {
+  const p = toWorld(e.clientX, e.clientY);
+  pointer.x = p.x; pointer.y = p.y;
+}
+const onBowl = () => dist(pointer.x, pointer.y, bowl.x, bowl.y) < bowl.r;
+
+canvas.addEventListener('pointerdown', e => {
+  Sound.init();
+  pointer.touch = e.pointerType !== 'mouse';
+  pointer.down = true;
+  setPointer(e);
+  if (pointer.touch) spoon.teleport = true; // finger jumped here: don't count it as speed
+  if (onBowl()) { reload(); return; }
+  if (!pointer.touch) deliver(); // mouse: click delivers; touch: lifting the finger delivers
+});
+canvas.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse' && !pointer.down) return;
+  pointer.touch = e.pointerType !== 'mouse';
+  setPointer(e);
+});
+canvas.addEventListener('pointerup', e => {
+  if (!pointer.down) return;
+  pointer.down = false;
+  if (e.pointerType !== 'mouse' && !onBowl()) deliver();
+});
+canvas.addEventListener('pointercancel', () => { pointer.down = false; });
+canvas.addEventListener('pointerenter', e => { setPointer(e); spoon.teleport = true; });
+canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+window.addEventListener('keydown', e => {
+  if (e.code === 'Space') { e.preventDefault(); Sound.init(); funnyFace(); }
+  if (e.code === 'KeyM') toggleMute();
+  if (e.code === 'Enter') {
+    const btn = { start: 'startBtn', levelDone: 'nextBtn', over: 'againBtn' }[S.screen];
+    if (btn) $(btn).click();
+  }
+});
+
+function toggleMute() {
+  Sound.muted = !Sound.muted;
+  $('muteBtn').textContent = Sound.muted ? '🔇' : '🔊';
+}
+
+$('funnyBtn').addEventListener('click', () => { Sound.init(); funnyFace(); });
+$('muteBtn').addEventListener('click', toggleMute);
+$('startBtn').addEventListener('click', () => { Sound.init(); Sound.play('click'); startGame(); });
+$('nextBtn').addEventListener('click', () => { Sound.play('click'); S.level++; startLevel(); });
+$('againBtn').addEventListener('click', () => { Sound.play('click'); startGame(); });
+
+window.addEventListener('resize', resize);
+
+/* =====================================================================
+   Main loop
+   ===================================================================== */
+resize();
+pointer.x = view.W * 0.72; pointer.y = view.H * 0.72;
+let lastTime = performance.now();
+function frame(now) {
+  const dt = clamp((now - lastTime) / 1000, 0.001, 0.05); // cap dt so a background tab doesn't explode physics
+  lastTime = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
