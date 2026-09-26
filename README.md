@@ -10,8 +10,13 @@ It's a single self-contained `index.html` file (HTML, CSS, vanilla JS and canvas
 - **Mouse:** move the spoon, click to feed, click the bowl to refill.
 - **Touch:** drag the spoon and lift your finger to feed. Tap the bowl to refill.
 - **Airplane:** loop the spoon around to make the baby curious so it opens wide for longer.
-- **SPACE** or 😜: pull a funny face to make the baby laugh.
+- **SPACE** or 😜: pull a funny face to make the baby laugh. Dropping food restarts its cooldown.
+- **Sneeze coming?** Put the spoon back in the bowl, then press **F + J** together to pinch the nose (two-finger tap on mobile).
 - **M:** mute.
+
+## Rules of thumb
+- Each level is 7 bites. The longer a level takes, the harder the baby gets.
+- Soups are runny: they drip and spill at lower spoon speeds. Compotes are thick and forgiving.
 
 ## Tuning
 All gameplay values (baby speed, mouth timing, difficulty, meters) are in the `CONFIG` object at the top of the script.
