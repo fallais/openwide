@@ -114,7 +114,7 @@
 </div>
 
 <button id="funnyBtn" class="round-btn hidden" aria-label="Funny face">😜<small data-i18n="spaceKey"></small></button>
-<button id="pinchBtn" class="round-btn hidden" aria-label="Pinch the nose">👃<small>A</small></button>
+<button id="pinchBtn" class="round-btn hidden" aria-label="Pinch the nose">👃<small data-i18n="pinchKey"></small></button>
 <button id="muteBtn" class="round-btn hidden" aria-label="Sound">🔊</button>
 <button id="langBtn" class="round-btn" aria-label="Language">FR</button>
 
@@ -291,9 +291,9 @@ const CONFIG = {
     dropResetsCooldown: true, // dropping food on the floor restarts the funny-face cooldown
   },
 
-  // Press A (or the 👃 button) during a sneeze windup to pinch the nose.
-  // Matched on the typed letter, so it's the A key on both QWERTY and AZERTY keyboards.
-  pinch: { key: 'a', points: 150, moodGain: 6, showTime: 0.6 },
+  // Press the pinch key (or the 👃 button) during a sneeze windup to pinch the nose.
+  // Physical key position: labelled A on French AZERTY keyboards, Q on QWERTY.
+  pinch: { code: 'KeyQ', points: 150, moodGain: 6, showTime: 0.6 },
 
   // Hold the spoon still near the baby for too long and it gets grabbed: mash to win it back.
   grab: {
@@ -368,7 +368,7 @@ const I18N = {
     help3: 'Refill at the <b>bowl</b>. Soups are runny and spill if you rush; compotes are thick.',
     help4: 'Do the <b>airplane</b> ✈: draw the shape from baby\'s thought bubble with a full spoon.',
     help5: '<b>SPACE</b> or 😜: funny face, baby laughs with the mouth wide open.',
-    help5b: 'Baby about to sneeze ("Ah… ahh…")? Press <b>A</b> or 👃 to <b>pinch the nose</b>!',
+    help5b: 'Baby about to sneeze ("Ah… ahh…")? Press <b>Q</b> or 👃 to <b>pinch the nose</b>!',
     help6: 'Don\'t hold the spoon still near baby. If it gets grabbed, <b>click fast</b> to win it back.',
     help7: 'Every 3 bites baby needs a burp (💨 in the top bar). <b>Click the tummy</b> (the blue onesie) <b>3 times quickly</b>, or tap it on mobile. Otherwise the next sneeze will be… messy.',
     help8: 'The longer a level takes, the trickier baby gets!',
@@ -392,7 +392,7 @@ const I18N = {
     laugh: ['Hehehe!', 'Giggle!', 'Hahaha!'], notNow: 'Not now!', wheee: 'Wheee! ✈',
     wantsFig: 'Baby wants a {fig}!', newFig: 'New shape!',
     ah: 'Ah... ahh...', choo: 'ACHOO!',
-    pinchHintKey: 'Press A to pinch the nose!', pinchHintTouch: 'Tap 👃 to pinch the nose!',
+    pinchHintKey: 'Press Q to pinch the nose!', pinchKey: 'Q', pinchHintTouch: 'Tap 👃 to pinch the nose!',
     sneezeStopped: 'Sneeze stopped! +{p}',
     grabbed: 'Grabbed!', mashKey: 'Click fast!', mashTouch: 'Tap fast!',
     grabWin: 'Got it back!', grabLose: 'Food in the hair!',
@@ -430,7 +430,7 @@ const I18N = {
     laugh: ['Héhéhé !', 'Hihihi !', 'Hahaha !'], notNow: 'Pas maintenant !', wheee: 'Vroum ! ✈',
     wantsFig: 'Bébé veut un {fig} !', newFig: 'Nouvelle forme !',
     ah: 'Ah... ahh...', choo: 'ATCHOUM !',
-    pinchHintKey: 'Appuie sur A pour pincer le nez !', pinchHintTouch: 'Tape sur 👃 pour pincer le nez !',
+    pinchHintKey: 'Appuie sur A pour pincer le nez !', pinchKey: 'A', pinchHintTouch: 'Tape sur 👃 pour pincer le nez !',
     sneezeStopped: 'Éternuement évité ! +{p}',
     grabbed: 'Attrapée !', mashKey: 'Clique vite !', mashTouch: 'Tape vite !',
     grabWin: 'Récupérée !', grabLose: 'De la purée dans les cheveux !',
@@ -2132,7 +2132,7 @@ window.addEventListener('keydown', e => {
   if (e.repeat) return;
   if (S.grab) { mashGrab(); return; }   // any key helps win the tug-of-war
   if (e.code === 'Space') { Sound.init(); onFunnyTap(); }
-  if (e.key && e.key.toLowerCase() === CONFIG.pinch.key) { Sound.init(); onPinch(); }
+  if (e.code === CONFIG.pinch.code) { Sound.init(); onPinch(); }
   if (e.code === 'KeyM') toggleMute();
   if (e.code === 'Enter') {
     const btn = { start: 'startBtn', levelDone: 'nextBtn', over: 'againBtn' }[S.screen];

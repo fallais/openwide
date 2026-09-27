@@ -11,7 +11,7 @@ It's a single self-contained `index.html` file (HTML, CSS, vanilla JS and canvas
 - **Mouse:** move the spoon, click to feed, click the bowl to refill.
 - **Touch:** drag the spoon and lift your finger to feed. Tap the bowl to refill.
 - **SPACE** or 😜: pull a funny face to make the baby laugh. Dropping food restarts its cooldown.
-- **A** (or 👃 on mobile) during a sneeze: pinch the nose to stop it.
+- **Q** on QWERTY / **A** on French AZERTY (same key), or 👃 on mobile, during a sneeze: pinch the nose to stop it.
 - **M:** mute. **FR/EN** button: switch language for this visit.
 
 ## Mechanics
