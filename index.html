@@ -54,8 +54,11 @@
   }
   #funnyBtn small { font-size: 11px; font-weight: bold; color: #5B3A78; margin-top: 2px; }
   .round-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(90,50,120,.25); }
-  #muteBtn { right: 120px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff; font-size: 22px; }
-  #langBtn { right: 176px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff;
+  #pinchBtn { right: 118px; bottom: max(18px, env(safe-area-inset-bottom)); width: 66px; height: 66px; background: #FFB7C8;
+    font-size: 28px; line-height: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  #pinchBtn small { font-size: 11px; font-weight: bold; color: #5B3A78; margin-top: 1px; }
+  #muteBtn { right: 196px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff; font-size: 22px; }
+  #langBtn { right: 252px; bottom: max(22px, env(safe-area-inset-bottom)); width: 48px; height: 48px; background: #fff;
     font-size: 15px; font-weight: bold; color: #5B3A78; z-index: 20; }
 
   /* ---------- Overlay screens ---------- */
@@ -111,6 +114,7 @@
 </div>
 
 <button id="funnyBtn" class="round-btn hidden" aria-label="Funny face">😜<small data-i18n="spaceKey"></small></button>
+<button id="pinchBtn" class="round-btn hidden" aria-label="Pinch the nose">👃<small>A</small></button>
 <button id="muteBtn" class="round-btn hidden" aria-label="Sound">🔊</button>
 <button id="langBtn" class="round-btn" aria-label="Language">FR</button>
 
@@ -124,6 +128,7 @@
       <li data-i18n-html="help3"></li>
       <li data-i18n-html="help4"></li>
       <li data-i18n-html="help5"></li>
+      <li data-i18n-html="help5b"></li>
       <li data-i18n-html="help6"></li>
       <li data-i18n-html="help7"></li>
       <li data-i18n-html="help8"></li>
@@ -286,8 +291,9 @@ const CONFIG = {
     dropResetsCooldown: true, // dropping food on the floor restarts the funny-face cooldown
   },
 
-  // Double-tap SPACE (or the 😜 button) during a sneeze windup to pinch the nose.
-  pinch: { doubleTapWindow: 0.35, points: 150, moodGain: 6, showTime: 0.6 },
+  // Press A (or the 👃 button) during a sneeze windup to pinch the nose.
+  // Matched on the typed letter, so it's the A key on both QWERTY and AZERTY keyboards.
+  pinch: { key: 'a', points: 150, moodGain: 6, showTime: 0.6 },
 
   // Hold the spoon still near the baby for too long and it gets grabbed: mash to win it back.
   grab: {
@@ -323,7 +329,7 @@ const CONFIG = {
     gapShrinkPerLevel: 0.1,
     minGap: 2.5,
     weights: { sneeze: 1, lookAway: 1.4, raspberry: 1 },
-    sneezeWindup: 1.6,      // long enough to react with a double-tap
+    sneezeWindup: 1.6,      // long enough to react and pinch the nose
     sneezeBurst: 0.5,
     lookAwayMin: 1.4,
     lookAwayMax: 2.4,
@@ -361,9 +367,10 @@ const I18N = {
     help2: '<b>Click</b> (or lift your finger) to feed. Only works when the mouth is open!',
     help3: 'Refill at the <b>bowl</b>. Soups are runny and spill if you rush; compotes are thick.',
     help4: 'Do the <b>airplane</b> ✈: draw the shape from baby\'s thought bubble with a full spoon.',
-    help5: '<b>SPACE</b> or 😜: funny face. <b>Double-tap</b> it during a sneeze to pinch the nose!',
+    help5: '<b>SPACE</b> or 😜: funny face, baby laughs with the mouth wide open.',
+    help5b: 'Baby about to sneeze ("Ah… ahh…")? Press <b>A</b> or 👃 to <b>pinch the nose</b>!',
     help6: 'Don\'t hold the spoon still near baby. If it gets grabbed, <b>click fast</b> to win it back.',
-    help7: 'Baby needs a burp? <b>Pat the tummy 3 times</b>, or the next sneeze will be… messy.',
+    help7: 'Every 3 bites baby needs a burp (💨 in the top bar). <b>Click the tummy</b> (the blue onesie) <b>3 times quickly</b>, or tap it on mobile. Otherwise the next sneeze will be… messy.',
     help8: 'The longer a level takes, the trickier baby gets!',
     start: 'Start feeding!', spaceKey: 'SPACE',
     level: 'Level', bites: 'Bites', score: 'Score', mood: 'Mood', mess: 'Mess',
@@ -385,11 +392,11 @@ const I18N = {
     laugh: ['Hehehe!', 'Giggle!', 'Hahaha!'], notNow: 'Not now!', wheee: 'Wheee! ✈',
     wantsFig: 'Baby wants a {fig}!', newFig: 'New shape!',
     ah: 'Ah... ahh...', choo: 'ACHOO!',
-    pinchHintKey: 'Double-tap SPACE to pinch the nose!', pinchHintTouch: 'Double-tap 😜 to pinch the nose!',
+    pinchHintKey: 'Press A to pinch the nose!', pinchHintTouch: 'Tap 👃 to pinch the nose!',
     sneezeStopped: 'Sneeze stopped! +{p}',
     grabbed: 'Grabbed!', mashKey: 'Click fast!', mashTouch: 'Tap fast!',
     grabWin: 'Got it back!', grabLose: 'Food in the hair!',
-    burpNeeded: 'Needs a burp!', burpHint: 'Pat the tummy 3 times!', burped: 'BUUURP! +{p}', pat: 'Pat!',
+    burpNeeded: 'Needs a burp!', burpHint: 'Click the tummy 3 times!', burpHintTouch: 'Tap the tummy 3 times!', burped: 'BUUURP! +{p}', pat: 'Pat!',
     spitUp: 'Spit-up! Should have burped…',
   },
   fr: {
@@ -398,9 +405,10 @@ const I18N = {
     help2: '<b>Clique</b> (ou lève le doigt) pour donner la becquée. Seulement bouche ouverte !',
     help3: 'Remplis la cuillère dans le <b>bol</b>. Les soupes sont liquides et débordent si tu te presses ; les compotes sont épaisses.',
     help4: 'Fais l\'<b>avion</b> ✈ : dessine avec la cuillère pleine la forme dans la bulle du bébé.',
-    help5: '<b>ESPACE</b> ou 😜 : grimace. <b>Double-tape</b> pendant un éternuement pour pincer le nez !',
+    help5: '<b>ESPACE</b> ou 😜 : grimace, bébé rit la bouche grande ouverte.',
+    help5b: 'Bébé va éternuer (« Ah… ahh… ») ? Appuie sur <b>A</b> ou 👃 pour lui <b>pincer le nez</b> !',
     help6: 'Ne laisse pas la cuillère immobile près du bébé. S\'il l\'attrape, <b>clique vite</b> pour la récupérer.',
-    help7: 'Bébé doit faire son rot ? <b>Tapote-lui le ventre 3 fois</b>, sinon le prochain éternuement sera… salissant.',
+    help7: 'Toutes les 3 bouchées, bébé doit faire son rot (💨 en haut). <b>Clique 3 fois rapidement sur son ventre</b> (la grenouillère bleue), ou tape dessus sur mobile. Sinon le prochain éternuement sera… salissant.',
     help8: 'Plus un niveau dure, plus bébé devient coriace !',
     start: 'À table !', spaceKey: 'ESPACE',
     level: 'Niveau', bites: 'Bouchées', score: 'Score', mood: 'Humeur', mess: 'Saleté',
@@ -422,11 +430,11 @@ const I18N = {
     laugh: ['Héhéhé !', 'Hihihi !', 'Hahaha !'], notNow: 'Pas maintenant !', wheee: 'Vroum ! ✈',
     wantsFig: 'Bébé veut un {fig} !', newFig: 'Nouvelle forme !',
     ah: 'Ah... ahh...', choo: 'ATCHOUM !',
-    pinchHintKey: 'Double-tape ESPACE pour pincer le nez !', pinchHintTouch: 'Double-tape 😜 pour pincer le nez !',
+    pinchHintKey: 'Appuie sur A pour pincer le nez !', pinchHintTouch: 'Tape sur 👃 pour pincer le nez !',
     sneezeStopped: 'Éternuement évité ! +{p}',
     grabbed: 'Attrapée !', mashKey: 'Clique vite !', mashTouch: 'Tape vite !',
     grabWin: 'Récupérée !', grabLose: 'De la purée dans les cheveux !',
-    burpNeeded: 'Besoin d\'un rot !', burpHint: 'Tapote le ventre 3 fois !', burped: 'BUUURP ! +{p}', pat: 'Tap !',
+    burpNeeded: 'Besoin d\'un rot !', burpHint: 'Clique 3 fois sur le ventre !', burpHintTouch: 'Tape 3 fois sur le ventre !', burped: 'BUUURP ! +{p}', pat: 'Tap !',
     spitUp: 'Renvoi ! Fallait faire le rot…',
   },
 };
@@ -639,7 +647,7 @@ const S = {
   level: 1, score: 0, combo: 0, bites: 0,
   mood: CONFIG.mood.start, mess: 0,
   levelMisses: 0, totalBites: 0, messHistory: [], levelTime: 0,
-  funnyCd: 0, eventTimer: 0, pendingTimer: 0, lastTap: -10,
+  funnyCd: 0, eventTimer: 0, pendingTimer: 0,
   condition: null,     // null | 'cold' | 'teething'
   figure: 'circle', figureTimer: 0, figurePop: 0,
   grab: null,          // { x, y, power, t } while the baby holds the spoon
@@ -866,6 +874,7 @@ function showScreen(id) {
   const inGame = id === null;
   $('hud').classList.toggle('hidden', !inGame);
   $('funnyBtn').classList.toggle('hidden', !inGame);
+  $('pinchBtn').classList.toggle('hidden', !inGame);
   $('muteBtn').classList.toggle('hidden', !inGame);
 }
 
@@ -938,7 +947,7 @@ function doBite() {
     S.needsBurp = true;
     addText(b.x, b.y - 190, t('burpNeeded'), '#1F7A4A', 30, 1.4);
     const bb = bodyBox();
-    hintOnce('burp', bb.x, bb.top + 60, t('burpHint'), '#1F7A4A', 2.5);
+    hintOnce('burp', bb.x, bb.top + 60, t(pointer.touch ? 'burpHintTouch' : 'burpHint'), '#1F7A4A', 2.5);
   }
 }
 
@@ -1013,19 +1022,21 @@ function reload() {
       g: 800, life: 0.6, max: 0.6, size: rand(3, 6), color: f.light });
 }
 
-// SPACE / 😜 button: a single tap pulls a funny face, a double tap during a sneeze pinches the nose.
+// SPACE / 😜 button: funny face (or helps win the tug-of-war).
 function onFunnyTap() {
   if (S.screen !== 'playing') return;
   if (S.grab) return mashGrab();
-  const b = baby, now = S.time;
-  const sneezing = b.event && b.event.type === 'sneeze' && !b.event.sprayed;
-  if (now - S.lastTap < CONFIG.pinch.doubleTapWindow) {
-    S.lastTap = -10;
-    if (sneezing) pinchNose();
-    return;
-  }
-  S.lastTap = now;
-  if (!sneezing) funnyFace();
+  const b = baby;
+  if (b.event && b.event.type === 'sneeze') { addText(b.x, b.y - 150, t('notNow'), '#8a6aa0', 24, 0.8); return; }
+  funnyFace();
+}
+
+// A / 👃 button: pinch the nose. Only does something while a sneeze is building up.
+function onPinch() {
+  if (S.screen !== 'playing') return;
+  if (S.grab) return mashGrab();
+  const b = baby;
+  if (b.event && b.event.type === 'sneeze' && !b.event.sprayed) pinchNose();
 }
 
 function funnyFace() {
@@ -1782,6 +1793,14 @@ function drawChairAndBody() {
   const stains = Math.floor(S.mess / 15);
   for (let i = 0; i < stains; i++) circle(bx - 25 + ((i * 37) % 50), topY + 30 + ((i * 23) % 45), 6, food().color);
 
+  // Burp needed: a pulsing target on the tummy shows where to click
+  if (S.needsBurp && S.screen === 'playing') {
+    const p = (Math.sin(S.time * 7) + 1) / 2;
+    ctx.beginPath(); ctx.arc(bx, topY + 85, 34 + p * 8, 0, TAU);
+    ctx.strokeStyle = `rgba(31,122,74,${0.45 + p * 0.45})`; ctx.lineWidth = 5; ctx.setLineDash([10, 7]); ctx.stroke(); ctx.setLineDash([]);
+    drawText('×3', bx, topY + 85, '#1F7A4A', 24, 0.9);
+  }
+
   // Tray
   rrect(rx - 175, 552, 350, 36, 16); ctx.fillStyle = '#FFFFFF'; ctx.fill();
   rrect(rx - 175, 578, 350, 10, 5); ctx.fillStyle = '#F1DDF5'; ctx.fill();
@@ -2113,6 +2132,7 @@ window.addEventListener('keydown', e => {
   if (e.repeat) return;
   if (S.grab) { mashGrab(); return; }   // any key helps win the tug-of-war
   if (e.code === 'Space') { Sound.init(); onFunnyTap(); }
+  if (e.key && e.key.toLowerCase() === CONFIG.pinch.key) { Sound.init(); onPinch(); }
   if (e.code === 'KeyM') toggleMute();
   if (e.code === 'Enter') {
     const btn = { start: 'startBtn', levelDone: 'nextBtn', over: 'againBtn' }[S.screen];
@@ -2126,6 +2146,7 @@ function toggleMute() {
 }
 
 $('funnyBtn').addEventListener('click', () => { Sound.init(); onFunnyTap(); });
+$('pinchBtn').addEventListener('click', () => { Sound.init(); onPinch(); });
 $('muteBtn').addEventListener('click', toggleMute);
 $('langBtn').addEventListener('click', toggleLang);
 $('startBtn').addEventListener('click', () => { Sound.init(); Sound.play('click'); startGame(); });
